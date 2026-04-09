@@ -1,0 +1,4 @@
+"MaternalID","PatientID","EmergencyArrival","Gravida","Para","LMP","EDD","FirstTrimester_US_EDD","Definitive_EDD","Complications","PET_Classification","ProteinuriaLevel","SerumCreatinineAtDelivery","HighestCreatinine","MaxSystolicBP","MaxDiastolicBP","PlateletCount","DialysisIndication","OtherComplications"
+1,5,0,7,1,,17-Apr-2026 0:00:00,,,"PET-SF","PET-SF (BP>160/110, CNS symptoms, or Renal failure",,,,,,,,
+2,1,0,,,,,,,,,,,,,,,,
+3,9,1,3,,09-Jun-2025 0:00:00,16-Mar-2026 0:00:00,09-Apr-2026 0:00:00,,"PET-SF","PET-SF (BP>160/110, CNS symptoms, or Renal failure",,,997.10,,,,"Rapidly Rising Creatinine",

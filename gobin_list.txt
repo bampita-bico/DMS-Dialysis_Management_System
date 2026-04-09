@@ -1,0 +1,10 @@
+ Volume in drive C has no label.
+ Volume Serial Number is 20D5-17A9
+
+ Directory of C:\Users\pc\go\bin
+
+28-Mar-26  07:56 AM    <DIR>          .
+28-Mar-26  07:56 AM    <DIR>          ..
+28-Mar-26  07:56 AM        41,664,512 gopls.exe
+               1 File(s)     41,664,512 bytes
+               2 Dir(s)  82,634,260,480 bytes free

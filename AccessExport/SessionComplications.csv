@@ -1,0 +1,3 @@
+"SessionComplicationID","SessionID","ComplicationTypeID","ComplicationName","Severity","InterventionNotes","RecordedBy","DateRecorded"
+1,187,,"5","Mild (No intervention needed)","<div>NONE</div>",2,24-Mar-2026 4:42:34
+2,222,,"1","Moderate (Intervention needed e.g., Bolus given)","<div>FLOW RATE WAS REDUCED</div>",,28-Mar-2026 2:12:15
