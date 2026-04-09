@@ -17,6 +17,9 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 	vitalsHandler := handlers.NewVitalsHandler(pool)
 	machinesHandler := handlers.NewMachinesHandler(pool)
 	waterHandler := handlers.NewWaterTreatmentHandler(pool)
+	labOrdersHandler := handlers.NewLabOrdersHandler(pool)
+	labCatalogHandler := handlers.NewLabCatalogHandler(pool)
+	imagingHandler := handlers.NewImagingHandler(pool)
 
 	// Protected group
 	auth := r.Group("/api/v1")
@@ -57,5 +60,26 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 		auth.POST("/water-tests", waterHandler.LogWaterTest)
 		auth.GET("/water-tests", waterHandler.ListWaterTests)
 		auth.GET("/water-tests/failed", waterHandler.ListFailedWaterTests)
+
+		// Lab endpoints
+		auth.POST("/lab/orders", labOrdersHandler.CreateOrder)
+		auth.GET("/lab/orders/:id", labOrdersHandler.GetOrder)
+		auth.GET("/lab/orders/pending", labOrdersHandler.ListPendingOrders)
+		auth.POST("/lab/orders/items/:item_id/collect", labOrdersHandler.CollectSpecimen)
+		auth.POST("/lab/orders/items/:item_id/results", labOrdersHandler.AddResult)
+		auth.POST("/lab/results/:id/verify", labOrdersHandler.VerifyResult)
+		auth.GET("/lab/critical-alerts", labOrdersHandler.ListCriticalAlerts)
+
+		// Lab catalog endpoints
+		auth.GET("/lab/tests", labCatalogHandler.ListTests)
+		auth.GET("/lab/tests/:id", labCatalogHandler.GetTest)
+		auth.GET("/lab/panels", labCatalogHandler.ListPanels)
+		auth.GET("/lab/panels/:id", labCatalogHandler.GetPanel)
+
+		// Imaging endpoints
+		auth.POST("/imaging/orders", imagingHandler.CreateOrder)
+		auth.GET("/imaging/orders/:id", imagingHandler.GetOrder)
+		auth.GET("/imaging/orders", imagingHandler.ListOrders)
+		auth.POST("/imaging/orders/:id/report", imagingHandler.AddReport)
 	}
 }
