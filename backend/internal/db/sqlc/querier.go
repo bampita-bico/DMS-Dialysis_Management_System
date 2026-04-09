@@ -16,6 +16,8 @@ type Querier interface {
 	AbortSession(ctx context.Context, arg AbortSessionParams) (DialysisSession, error)
 	AcknowledgeAlert(ctx context.Context, arg AcknowledgeAlertParams) (SessionVital, error)
 	AcknowledgeCriticalAlert(ctx context.Context, arg AcknowledgeCriticalAlertParams) (LabCriticalAlert, error)
+	ApproveClaim(ctx context.Context, arg ApproveClaimParams) (InsuranceClaim, error)
+	ApproveWaiver(ctx context.Context, arg ApproveWaiverParams) (Waiver, error)
 	ApproveWaterTest(ctx context.Context, arg ApproveWaterTestParams) (WaterTreatmentLog, error)
 	AssignCHWToPatient(ctx context.Context, arg AssignCHWToPatientParams) (ChwPatientAssignment, error)
 	AssignUserRole(ctx context.Context, arg AssignUserRoleParams) (UserRole, error)
@@ -29,6 +31,7 @@ type Querier interface {
 	CollectSpecimen(ctx context.Context, arg CollectSpecimenParams) (LabOrderItem, error)
 	CompleteAssignment(ctx context.Context, id uuid.UUID) (SessionStaffAssignment, error)
 	CompleteMaintenance(ctx context.Context, arg CompleteMaintenanceParams) (EquipmentMaintenance, error)
+	CompletePlan(ctx context.Context, id uuid.UUID) (PaymentPlan, error)
 	CompleteSession(ctx context.Context, arg CompleteSessionParams) (DialysisSession, error)
 	CreateAdequacyAssessment(ctx context.Context, arg CreateAdequacyAssessmentParams) (AdequacyAssessment, error)
 	CreateAdmission(ctx context.Context, arg CreateAdmissionParams) (Admission, error)
@@ -36,6 +39,7 @@ type Querier interface {
 	CreateAnticoagulationRecord(ctx context.Context, arg CreateAnticoagulationRecordParams) (AnticoagulationRecord, error)
 	CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) (AuditLog, error)
 	CreateAuthSession(ctx context.Context, arg CreateAuthSessionParams) (AuthSession, error)
+	CreateBillingAccount(ctx context.Context, arg CreateBillingAccountParams) (BillingAccount, error)
 	CreateCHW(ctx context.Context, arg CreateCHWParams) (CommunityHealthWorker, error)
 	CreateComorbidity(ctx context.Context, arg CreateComorbidityParams) (Comorbidity, error)
 	CreateConsent(ctx context.Context, arg CreateConsentParams) (Consent, error)
@@ -61,6 +65,10 @@ type Querier interface {
 	CreateImagingOrder(ctx context.Context, arg CreateImagingOrderParams) (ImagingOrder, error)
 	CreateImagingResult(ctx context.Context, arg CreateImagingResultParams) (ImagingResult, error)
 	CreateInfectionControlLog(ctx context.Context, arg CreateInfectionControlLogParams) (InfectionControlLog, error)
+	CreateInsuranceClaim(ctx context.Context, arg CreateInsuranceClaimParams) (InsuranceClaim, error)
+	CreateInsuranceScheme(ctx context.Context, arg CreateInsuranceSchemeParams) (InsuranceScheme, error)
+	CreateInvoice(ctx context.Context, arg CreateInvoiceParams) (Invoice, error)
+	CreateInvoiceItem(ctx context.Context, arg CreateInvoiceItemParams) (InvoiceItem, error)
 	CreateIronTherapyRecord(ctx context.Context, arg CreateIronTherapyRecordParams) (IronTherapyRecord, error)
 	CreateLabCriticalAlert(ctx context.Context, arg CreateLabCriticalAlertParams) (LabCriticalAlert, error)
 	CreateLabOrder(ctx context.Context, arg CreateLabOrderParams) (LabOrder, error)
@@ -78,10 +86,13 @@ type Querier interface {
 	CreatePatientContact(ctx context.Context, arg CreatePatientContactParams) (PatientContact, error)
 	CreatePatientFlag(ctx context.Context, arg CreatePatientFlagParams) (PatientFlag, error)
 	CreatePatientIdentifier(ctx context.Context, arg CreatePatientIdentifierParams) (PatientIdentifier, error)
+	CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error)
+	CreatePaymentPlan(ctx context.Context, arg CreatePaymentPlanParams) (PaymentPlan, error)
 	CreatePharmacyStock(ctx context.Context, arg CreatePharmacyStockParams) (PharmacyStock, error)
 	CreatePowerOutageLog(ctx context.Context, arg CreatePowerOutageLogParams) (PowerOutageLog, error)
 	CreatePrescription(ctx context.Context, arg CreatePrescriptionParams) (Prescription, error)
 	CreatePrescriptionItem(ctx context.Context, arg CreatePrescriptionItemParams) (PrescriptionItem, error)
+	CreatePriceList(ctx context.Context, arg CreatePriceListParams) (PriceList, error)
 	CreateReferral(ctx context.Context, arg CreateReferralParams) (Referral, error)
 	CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error)
 	CreateSessionComplication(ctx context.Context, arg CreateSessionComplicationParams) (SessionComplication, error)
@@ -96,10 +107,12 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateVascularAccess(ctx context.Context, arg CreateVascularAccessParams) (VascularAccess, error)
 	CreateVascularAccessAssessment(ctx context.Context, arg CreateVascularAccessAssessmentParams) (VascularAccessAssessment, error)
+	CreateWaiver(ctx context.Context, arg CreateWaiverParams) (Waiver, error)
 	CreateWaterTreatmentLog(ctx context.Context, arg CreateWaterTreatmentLogParams) (WaterTreatmentLog, error)
 	DeactivateSchedule(ctx context.Context, id uuid.UUID) (SessionSchedule, error)
 	DeleteAdequacyAssessment(ctx context.Context, id uuid.UUID) error
 	DeleteAnticoagulationRecord(ctx context.Context, id uuid.UUID) error
+	DeleteBillingAccount(ctx context.Context, id uuid.UUID) error
 	DeleteConsumable(ctx context.Context, id uuid.UUID) error
 	DeleteConsumablesInventory(ctx context.Context, id uuid.UUID) error
 	DeleteConsumablesUsage(ctx context.Context, id uuid.UUID) error
@@ -118,6 +131,10 @@ type Querier interface {
 	DeleteImagingOrder(ctx context.Context, id uuid.UUID) error
 	DeleteImagingResult(ctx context.Context, id uuid.UUID) error
 	DeleteInfectionControlLog(ctx context.Context, id uuid.UUID) error
+	DeleteInsuranceClaim(ctx context.Context, id uuid.UUID) error
+	DeleteInsuranceScheme(ctx context.Context, id uuid.UUID) error
+	DeleteInvoice(ctx context.Context, id uuid.UUID) error
+	DeleteInvoiceItem(ctx context.Context, id uuid.UUID) error
 	DeleteIronTherapyRecord(ctx context.Context, id uuid.UUID) error
 	DeleteLabCriticalAlert(ctx context.Context, id uuid.UUID) error
 	DeleteLabOrder(ctx context.Context, id uuid.UUID) error
@@ -129,10 +146,13 @@ type Querier interface {
 	DeleteMedication(ctx context.Context, id uuid.UUID) error
 	DeleteMedicationAdministration(ctx context.Context, id uuid.UUID) error
 	DeleteMicrobiologyResult(ctx context.Context, id uuid.UUID) error
+	DeletePayment(ctx context.Context, id uuid.UUID) error
+	DeletePaymentPlan(ctx context.Context, id uuid.UUID) error
 	DeletePharmacyStock(ctx context.Context, id uuid.UUID) error
 	DeletePowerOutageLog(ctx context.Context, id uuid.UUID) error
 	DeletePrescription(ctx context.Context, id uuid.UUID) error
 	DeletePrescriptionItem(ctx context.Context, id uuid.UUID) error
+	DeletePriceList(ctx context.Context, id uuid.UUID) error
 	DeleteSessionComplication(ctx context.Context, id uuid.UUID) error
 	DeleteSessionFluidBalance(ctx context.Context, id uuid.UUID) error
 	DeleteSessionNursingNote(ctx context.Context, id uuid.UUID) error
@@ -142,6 +162,7 @@ type Querier interface {
 	DeleteStockMovement(ctx context.Context, id uuid.UUID) error
 	DeleteVascularAccess(ctx context.Context, id uuid.UUID) error
 	DeleteVascularAccessAssessment(ctx context.Context, id uuid.UUID) error
+	DeleteWaiver(ctx context.Context, id uuid.UUID) error
 	DeleteWaterTreatmentLog(ctx context.Context, id uuid.UUID) error
 	DischargePatient(ctx context.Context, arg DischargePatientParams) (Admission, error)
 	DispensePrescription(ctx context.Context, arg DispensePrescriptionParams) (Prescription, error)
@@ -155,7 +176,10 @@ type Querier interface {
 	GetAnticoagulationRecord(ctx context.Context, id uuid.UUID) (AnticoagulationRecord, error)
 	GetAuditLog(ctx context.Context, id uuid.UUID) (AuditLog, error)
 	GetAuthSession(ctx context.Context, tokenHash string) (AuthSession, error)
+	GetBillingAccount(ctx context.Context, id uuid.UUID) (BillingAccount, error)
+	GetBillingAccountByPatient(ctx context.Context, arg GetBillingAccountByPatientParams) (BillingAccount, error)
 	GetCHWByPatient(ctx context.Context, patientID uuid.UUID) (CommunityHealthWorker, error)
+	GetClaimByNumber(ctx context.Context, arg GetClaimByNumberParams) (InsuranceClaim, error)
 	GetConsentByType(ctx context.Context, arg GetConsentByTypeParams) (Consent, error)
 	GetConsumable(ctx context.Context, id uuid.UUID) (Consumable, error)
 	GetConsumablesInventory(ctx context.Context, id uuid.UUID) (ConsumablesInventory, error)
@@ -185,6 +209,11 @@ type Querier interface {
 	GetImagingResultByOrder(ctx context.Context, orderID uuid.UUID) (ImagingResult, error)
 	GetInfectionControlLog(ctx context.Context, id uuid.UUID) (InfectionControlLog, error)
 	GetInfectiousFlags(ctx context.Context, patientID uuid.UUID) ([]PatientFlag, error)
+	GetInsuranceClaim(ctx context.Context, id uuid.UUID) (InsuranceClaim, error)
+	GetInsuranceScheme(ctx context.Context, id uuid.UUID) (InsuranceScheme, error)
+	GetInvoice(ctx context.Context, id uuid.UUID) (Invoice, error)
+	GetInvoiceByNumber(ctx context.Context, arg GetInvoiceByNumberParams) (Invoice, error)
+	GetInvoiceItem(ctx context.Context, id uuid.UUID) (InvoiceItem, error)
 	GetIronTherapyRecord(ctx context.Context, id uuid.UUID) (IronTherapyRecord, error)
 	GetLabCriticalAlert(ctx context.Context, id uuid.UUID) (LabCriticalAlert, error)
 	GetLabOrder(ctx context.Context, id uuid.UUID) (LabOrder, error)
@@ -209,12 +238,18 @@ type Querier interface {
 	GetPatientByMRN(ctx context.Context, arg GetPatientByMRNParams) (Patient, error)
 	GetPatientByNationalID(ctx context.Context, nationalID pgtype.Text) (Patient, error)
 	GetPatientsByCHW(ctx context.Context, chwID uuid.UUID) ([]Patient, error)
+	GetPayment(ctx context.Context, id uuid.UUID) (Payment, error)
+	GetPaymentPlan(ctx context.Context, id uuid.UUID) (PaymentPlan, error)
+	GetPaymentTotal(ctx context.Context, arg GetPaymentTotalParams) (interface{}, error)
 	GetPendingSyncItems(ctx context.Context, arg GetPendingSyncItemsParams) ([]SyncQueue, error)
 	GetPharmacyStock(ctx context.Context, id uuid.UUID) (PharmacyStock, error)
+	GetPlanByNumber(ctx context.Context, arg GetPlanByNumberParams) (PaymentPlan, error)
 	GetPowerOutageLog(ctx context.Context, id uuid.UUID) (PowerOutageLog, error)
 	GetPrescription(ctx context.Context, id uuid.UUID) (Prescription, error)
 	GetPrescriptionBySession(ctx context.Context, sessionID uuid.UUID) (DialysisPrescription, error)
 	GetPrescriptionItem(ctx context.Context, id uuid.UUID) (PrescriptionItem, error)
+	GetPriceByServiceCode(ctx context.Context, arg GetPriceByServiceCodeParams) (PriceList, error)
+	GetPriceList(ctx context.Context, id uuid.UUID) (PriceList, error)
 	GetPrimaryAccessForPatient(ctx context.Context, patientID uuid.UUID) (VascularAccess, error)
 	GetPrimaryContact(ctx context.Context, patientID uuid.UUID) (NextOfKin, error)
 	GetPrimaryDiagnosis(ctx context.Context, patientID uuid.UUID) (Diagnosis, error)
@@ -236,16 +271,22 @@ type Querier interface {
 	GetUsersInRole(ctx context.Context, roleID uuid.UUID) ([]GetUsersInRoleRow, error)
 	GetVascularAccess(ctx context.Context, id uuid.UUID) (VascularAccess, error)
 	GetVascularAccessAssessment(ctx context.Context, id uuid.UUID) (VascularAccessAssessment, error)
+	GetWaiver(ctx context.Context, id uuid.UUID) (Waiver, error)
+	GetWaiverByNumber(ctx context.Context, arg GetWaiverByNumberParams) (Waiver, error)
 	GetWaterTreatmentLog(ctx context.Context, id uuid.UUID) (WaterTreatmentLog, error)
+	ListAccountsByStatus(ctx context.Context, arg ListAccountsByStatusParams) ([]BillingAccount, error)
 	ListActiveAdmissions(ctx context.Context, hospitalID uuid.UUID) ([]Admission, error)
 	ListActiveAssignmentsByStaff(ctx context.Context, staffID uuid.UUID) ([]SessionStaffAssignment, error)
 	ListActiveCertifications(ctx context.Context, hospitalID uuid.UUID) ([]EquipmentCertification, error)
 	ListActiveConsumables(ctx context.Context, hospitalID uuid.UUID) ([]Consumable, error)
+	ListActiveInsuranceSchemes(ctx context.Context, hospitalID uuid.UUID) ([]InsuranceScheme, error)
 	ListActiveLabPanels(ctx context.Context, hospitalID uuid.UUID) ([]LabPanel, error)
 	ListActiveLabTests(ctx context.Context, hospitalID uuid.UUID) ([]LabTestCatalog, error)
 	ListActiveMedications(ctx context.Context, hospitalID uuid.UUID) ([]Medication, error)
 	ListActivePatients(ctx context.Context, arg ListActivePatientsParams) ([]Patient, error)
+	ListActivePlans(ctx context.Context, hospitalID uuid.UUID) ([]PaymentPlan, error)
 	ListActivePrescriptions(ctx context.Context, hospitalID uuid.UUID) ([]Prescription, error)
+	ListActivePrices(ctx context.Context, hospitalID uuid.UUID) ([]PriceList, error)
 	ListActiveSchedulesByMachine(ctx context.Context, machineID pgtype.UUID) ([]SessionSchedule, error)
 	ListActiveSchedulesByPatient(ctx context.Context, patientID uuid.UUID) ([]SessionSchedule, error)
 	ListActiveSessions(ctx context.Context, hospitalID uuid.UUID) ([]DialysisSession, error)
@@ -263,9 +304,14 @@ type Querier interface {
 	ListAuditLogsByTable(ctx context.Context, arg ListAuditLogsByTableParams) ([]AuditLog, error)
 	ListAuditLogsByUser(ctx context.Context, arg ListAuditLogsByUserParams) ([]AuditLog, error)
 	ListAvailableMachines(ctx context.Context, hospitalID uuid.UUID) ([]DialysisMachine, error)
+	ListBillingAccountsByHospital(ctx context.Context, hospitalID uuid.UUID) ([]BillingAccount, error)
 	ListCHWsByRegion(ctx context.Context, arg ListCHWsByRegionParams) ([]CommunityHealthWorker, error)
 	ListCertificationsByEquipment(ctx context.Context, equipmentID uuid.UUID) ([]EquipmentCertification, error)
 	ListCertificationsByType(ctx context.Context, arg ListCertificationsByTypeParams) ([]EquipmentCertification, error)
+	ListClaimedItems(ctx context.Context, hospitalID uuid.UUID) ([]InvoiceItem, error)
+	ListClaimsByInvoice(ctx context.Context, invoiceID uuid.UUID) ([]InsuranceClaim, error)
+	ListClaimsByScheme(ctx context.Context, schemeID uuid.UUID) ([]InsuranceClaim, error)
+	ListClaimsByStatus(ctx context.Context, arg ListClaimsByStatusParams) ([]InsuranceClaim, error)
 	ListComorbiditiesByPatient(ctx context.Context, patientID uuid.UUID) ([]Comorbidity, error)
 	ListComplicationsByPatient(ctx context.Context, patientID uuid.UUID) ([]SessionComplication, error)
 	ListComplicationsBySession(ctx context.Context, sessionID uuid.UUID) ([]SessionComplication, error)
@@ -308,10 +354,15 @@ type Querier interface {
 	ListImagingResultsByDateRange(ctx context.Context, arg ListImagingResultsByDateRangeParams) ([]ImagingResult, error)
 	ListInadequateAssessments(ctx context.Context, hospitalID uuid.UUID) ([]AdequacyAssessment, error)
 	ListInfectionLogsByMachine(ctx context.Context, machineID uuid.UUID) ([]InfectionControlLog, error)
+	ListInsuranceSchemesByHospital(ctx context.Context, hospitalID uuid.UUID) ([]InsuranceScheme, error)
 	ListInteractionsForMedication(ctx context.Context, medicationAID uuid.UUID) ([]DrugInteraction, error)
 	ListInventoryByConsumable(ctx context.Context, consumableID uuid.UUID) ([]ConsumablesInventory, error)
+	ListInvoicesByAccount(ctx context.Context, accountID uuid.UUID) ([]Invoice, error)
+	ListInvoicesByPatient(ctx context.Context, arg ListInvoicesByPatientParams) ([]Invoice, error)
+	ListInvoicesByStatus(ctx context.Context, arg ListInvoicesByStatusParams) ([]Invoice, error)
 	ListIronAdverseReactions(ctx context.Context, hospitalID uuid.UUID) ([]IronTherapyRecord, error)
 	ListIronTherapyRecordsByPatient(ctx context.Context, arg ListIronTherapyRecordsByPatientParams) ([]IronTherapyRecord, error)
+	ListItemsByInvoice(ctx context.Context, invoiceID uuid.UUID) ([]InvoiceItem, error)
 	ListLabCriticalAlertsByPatient(ctx context.Context, patientID uuid.UUID) ([]LabCriticalAlert, error)
 	ListLabOrderItemsByOrder(ctx context.Context, orderID uuid.UUID) ([]LabOrderItem, error)
 	ListLabOrderItemsByStatus(ctx context.Context, arg ListLabOrderItemsByStatusParams) ([]LabOrderItem, error)
@@ -336,21 +387,33 @@ type Querier interface {
 	ListNextOfKinByPatient(ctx context.Context, patientID uuid.UUID) ([]NextOfKin, error)
 	ListNursingNotesBySession(ctx context.Context, sessionID uuid.UUID) ([]SessionNursingNote, error)
 	ListOngoingOutages(ctx context.Context, hospitalID uuid.UUID) ([]PowerOutageLog, error)
+	ListOverdueInvoices(ctx context.Context, hospitalID uuid.UUID) ([]Invoice, error)
 	ListOverdueMaintenance(ctx context.Context, hospitalID uuid.UUID) ([]EquipmentMaintenance, error)
+	ListPaymentsByDate(ctx context.Context, arg ListPaymentsByDateParams) ([]Payment, error)
+	ListPaymentsByInvoice(ctx context.Context, invoiceID pgtype.UUID) ([]Payment, error)
+	ListPaymentsByMethod(ctx context.Context, arg ListPaymentsByMethodParams) ([]Payment, error)
+	ListPaymentsByPatient(ctx context.Context, arg ListPaymentsByPatientParams) ([]Payment, error)
+	ListPendingClaims(ctx context.Context, hospitalID uuid.UUID) ([]InsuranceClaim, error)
 	ListPendingConflicts(ctx context.Context, hospitalID uuid.UUID) ([]SyncConflict, error)
 	ListPendingImagingOrders(ctx context.Context, hospitalID uuid.UUID) ([]ImagingOrder, error)
 	ListPendingLabOrders(ctx context.Context, hospitalID uuid.UUID) ([]LabOrder, error)
 	ListPendingVerificationResults(ctx context.Context, hospitalID uuid.UUID) ([]LabResult, error)
+	ListPendingWaivers(ctx context.Context, hospitalID uuid.UUID) ([]Waiver, error)
 	ListPendingWaterTests(ctx context.Context, hospitalID uuid.UUID) ([]WaterTreatmentLog, error)
+	ListPlansByAccount(ctx context.Context, accountID uuid.UUID) ([]PaymentPlan, error)
+	ListPlansByPatient(ctx context.Context, patientID uuid.UUID) ([]PaymentPlan, error)
 	ListPowerOutagesByHospital(ctx context.Context, hospitalID uuid.UUID) ([]PowerOutageLog, error)
 	ListPrescriptionItemsByPrescription(ctx context.Context, prescriptionID uuid.UUID) ([]PrescriptionItem, error)
 	ListPrescriptionsByPatient(ctx context.Context, patientID uuid.UUID) ([]DialysisPrescription, error)
+	ListPricesByHospital(ctx context.Context, hospitalID uuid.UUID) ([]PriceList, error)
+	ListPricesByScheme(ctx context.Context, arg ListPricesBySchemeParams) ([]PriceList, error)
 	ListRecordsWithComplications(ctx context.Context, hospitalID uuid.UUID) ([]AnticoagulationRecord, error)
 	ListReferenceRangesByTest(ctx context.Context, testID uuid.UUID) ([]LabReferenceRange, error)
 	ListReferralsByPatient(ctx context.Context, patientID uuid.UUID) ([]Referral, error)
 	ListReusableConsumables(ctx context.Context, hospitalID uuid.UUID) ([]Consumable, error)
 	ListRoles(ctx context.Context, hospitalID uuid.UUID) ([]Role, error)
 	ListSchedulesByHospital(ctx context.Context, hospitalID uuid.UUID) ([]SessionSchedule, error)
+	ListSchemesByCountry(ctx context.Context, arg ListSchemesByCountryParams) ([]InsuranceScheme, error)
 	ListSessionsByDate(ctx context.Context, arg ListSessionsByDateParams) ([]DialysisSession, error)
 	ListSessionsByPatient(ctx context.Context, arg ListSessionsByPatientParams) ([]DialysisSession, error)
 	ListSevereComplications(ctx context.Context, hospitalID uuid.UUID) ([]SessionComplication, error)
@@ -370,7 +433,10 @@ type Querier interface {
 	ListVascularAccessByPatient(ctx context.Context, patientID uuid.UUID) ([]VascularAccess, error)
 	ListVitalsBySession(ctx context.Context, sessionID uuid.UUID) ([]SessionVital, error)
 	ListVitalsWithAlerts(ctx context.Context, sessionID uuid.UUID) ([]SessionVital, error)
+	ListWaiversByInvoice(ctx context.Context, invoiceID uuid.UUID) ([]Waiver, error)
+	ListWaiversByPatient(ctx context.Context, patientID uuid.UUID) ([]Waiver, error)
 	ListWaterTestsByDate(ctx context.Context, arg ListWaterTestsByDateParams) ([]WaterTreatmentLog, error)
+	MarkItemAsClaimed(ctx context.Context, id uuid.UUID) (InvoiceItem, error)
 	MarkNoteReviewedByDoctor(ctx context.Context, arg MarkNoteReviewedByDoctorParams) (SessionNursingNote, error)
 	MarkNotificationActioned(ctx context.Context, id uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, id uuid.UUID) error
@@ -379,7 +445,9 @@ type Querier interface {
 	MarkSyncSynced(ctx context.Context, id uuid.UUID) error
 	NotifyDoctorOfCriticalAlert(ctx context.Context, id uuid.UUID) (LabCriticalAlert, error)
 	PerformImagingOrder(ctx context.Context, arg PerformImagingOrderParams) (ImagingOrder, error)
+	RejectClaim(ctx context.Context, arg RejectClaimParams) (InsuranceClaim, error)
 	RejectSpecimen(ctx context.Context, arg RejectSpecimenParams) (LabOrderItem, error)
+	RejectWaiver(ctx context.Context, arg RejectWaiverParams) (Waiver, error)
 	RequeueFailedSyncs(ctx context.Context) error
 	ResolveConflict(ctx context.Context, arg ResolveConflictParams) error
 	ResolveFault(ctx context.Context, arg ResolveFaultParams) (EquipmentFault, error)
@@ -398,6 +466,9 @@ type Querier interface {
 	SoftDeleteUser(ctx context.Context, id uuid.UUID) error
 	StartAssignment(ctx context.Context, id uuid.UUID) (SessionStaffAssignment, error)
 	StartSession(ctx context.Context, arg StartSessionParams) (DialysisSession, error)
+	SubmitClaim(ctx context.Context, arg SubmitClaimParams) (InsuranceClaim, error)
+	UpdateAccountBalance(ctx context.Context, arg UpdateAccountBalanceParams) (BillingAccount, error)
+	UpdateAccountStatus(ctx context.Context, arg UpdateAccountStatusParams) (BillingAccount, error)
 	UpdateAdequacyAssessment(ctx context.Context, arg UpdateAdequacyAssessmentParams) (AdequacyAssessment, error)
 	UpdateAnticoagulationRecord(ctx context.Context, arg UpdateAnticoagulationRecordParams) (AnticoagulationRecord, error)
 	UpdateComorbidityStatus(ctx context.Context, arg UpdateComorbidityStatusParams) (Comorbidity, error)
@@ -411,7 +482,10 @@ type Querier interface {
 	UpdateHospital(ctx context.Context, arg UpdateHospitalParams) (Hospital, error)
 	UpdateHospitalSetting(ctx context.Context, arg UpdateHospitalSettingParams) (HospitalSetting, error)
 	UpdateImagingResult(ctx context.Context, arg UpdateImagingResultParams) (ImagingResult, error)
+	UpdateInsuranceScheme(ctx context.Context, arg UpdateInsuranceSchemeParams) (InsuranceScheme, error)
 	UpdateInventoryQuantity(ctx context.Context, arg UpdateInventoryQuantityParams) (ConsumablesInventory, error)
+	UpdateInvoicePayment(ctx context.Context, arg UpdateInvoicePaymentParams) (Invoice, error)
+	UpdateInvoiceStatus(ctx context.Context, arg UpdateInvoiceStatusParams) (Invoice, error)
 	UpdateLabOrderItemStatus(ctx context.Context, arg UpdateLabOrderItemStatusParams) (LabOrderItem, error)
 	UpdateLabOrderStatus(ctx context.Context, arg UpdateLabOrderStatusParams) (LabOrder, error)
 	UpdateLabPanel(ctx context.Context, arg UpdateLabPanelParams) (LabPanel, error)
@@ -422,6 +496,8 @@ type Querier interface {
 	UpdateMedication(ctx context.Context, arg UpdateMedicationParams) (Medication, error)
 	UpdateMicrobiologyResult(ctx context.Context, arg UpdateMicrobiologyResultParams) (MicrobiologyResult, error)
 	UpdatePatient(ctx context.Context, arg UpdatePatientParams) (Patient, error)
+	UpdatePlanPayment(ctx context.Context, arg UpdatePlanPaymentParams) (PaymentPlan, error)
+	UpdatePriceList(ctx context.Context, arg UpdatePriceListParams) (PriceList, error)
 	UpdateReferralStatus(ctx context.Context, arg UpdateReferralStatusParams) (Referral, error)
 	UpdateRole(ctx context.Context, arg UpdateRoleParams) (Role, error)
 	UpdateSessionComplication(ctx context.Context, arg UpdateSessionComplicationParams) (SessionComplication, error)
