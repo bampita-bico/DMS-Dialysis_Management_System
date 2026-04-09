@@ -885,6 +885,142 @@ func (ns NullIDType) Value() (driver.Value, error) {
 	return string(ns.IDType), nil
 }
 
+type ImagingModality string
+
+const (
+	ImagingModalityXray        ImagingModality = "xray"
+	ImagingModalityUltrasound  ImagingModality = "ultrasound"
+	ImagingModalityEcho        ImagingModality = "echo"
+	ImagingModalityCt          ImagingModality = "ct"
+	ImagingModalityMri         ImagingModality = "mri"
+	ImagingModalityFistulogram ImagingModality = "fistulogram"
+	ImagingModalityAngiogram   ImagingModality = "angiogram"
+)
+
+func (e *ImagingModality) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ImagingModality(s)
+	case string:
+		*e = ImagingModality(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ImagingModality: %T", src)
+	}
+	return nil
+}
+
+type NullImagingModality struct {
+	ImagingModality ImagingModality `json:"imaging_modality"`
+	Valid           bool            `json:"valid"` // Valid is true if ImagingModality is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullImagingModality) Scan(value interface{}) error {
+	if value == nil {
+		ns.ImagingModality, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ImagingModality.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullImagingModality) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ImagingModality), nil
+}
+
+type LabPriority string
+
+const (
+	LabPriorityRoutine LabPriority = "routine"
+	LabPriorityUrgent  LabPriority = "urgent"
+	LabPriorityStat    LabPriority = "stat"
+)
+
+func (e *LabPriority) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = LabPriority(s)
+	case string:
+		*e = LabPriority(s)
+	default:
+		return fmt.Errorf("unsupported scan type for LabPriority: %T", src)
+	}
+	return nil
+}
+
+type NullLabPriority struct {
+	LabPriority LabPriority `json:"lab_priority"`
+	Valid       bool        `json:"valid"` // Valid is true if LabPriority is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullLabPriority) Scan(value interface{}) error {
+	if value == nil {
+		ns.LabPriority, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.LabPriority.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullLabPriority) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.LabPriority), nil
+}
+
+type LabStatus string
+
+const (
+	LabStatusPending    LabStatus = "pending"
+	LabStatusCollected  LabStatus = "collected"
+	LabStatusProcessing LabStatus = "processing"
+	LabStatusCompleted  LabStatus = "completed"
+	LabStatusCancelled  LabStatus = "cancelled"
+	LabStatusRejected   LabStatus = "rejected"
+)
+
+func (e *LabStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = LabStatus(s)
+	case string:
+		*e = LabStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for LabStatus: %T", src)
+	}
+	return nil
+}
+
+type NullLabStatus struct {
+	LabStatus LabStatus `json:"lab_status"`
+	Valid     bool      `json:"valid"` // Valid is true if LabStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullLabStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.LabStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.LabStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullLabStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.LabStatus), nil
+}
+
 type MachineStatus string
 
 const (
@@ -1150,6 +1286,51 @@ func (ns NullReferralUrgency) Value() (driver.Value, error) {
 	return string(ns.ReferralUrgency), nil
 }
 
+type ResultStatus string
+
+const (
+	ResultStatusPending     ResultStatus = "pending"
+	ResultStatusPreliminary ResultStatus = "preliminary"
+	ResultStatusFinal       ResultStatus = "final"
+	ResultStatusCorrected   ResultStatus = "corrected"
+	ResultStatusCancelled   ResultStatus = "cancelled"
+)
+
+func (e *ResultStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ResultStatus(s)
+	case string:
+		*e = ResultStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ResultStatus: %T", src)
+	}
+	return nil
+}
+
+type NullResultStatus struct {
+	ResultStatus ResultStatus `json:"result_status"`
+	Valid        bool         `json:"valid"` // Valid is true if ResultStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullResultStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ResultStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ResultStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullResultStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ResultStatus), nil
+}
+
 type SessionStatus string
 
 const (
@@ -1327,6 +1508,56 @@ func (ns NullShiftType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.ShiftType), nil
+}
+
+type SpecimenType string
+
+const (
+	SpecimenTypeWholeBlood SpecimenType = "whole_blood"
+	SpecimenTypeSerum      SpecimenType = "serum"
+	SpecimenTypePlasma     SpecimenType = "plasma"
+	SpecimenTypeUrine      SpecimenType = "urine"
+	SpecimenTypeStool      SpecimenType = "stool"
+	SpecimenTypeCsf        SpecimenType = "csf"
+	SpecimenTypeSputum     SpecimenType = "sputum"
+	SpecimenTypeSwab       SpecimenType = "swab"
+	SpecimenTypeTissue     SpecimenType = "tissue"
+	SpecimenTypeOther      SpecimenType = "other"
+)
+
+func (e *SpecimenType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SpecimenType(s)
+	case string:
+		*e = SpecimenType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SpecimenType: %T", src)
+	}
+	return nil
+}
+
+type NullSpecimenType struct {
+	SpecimenType SpecimenType `json:"specimen_type"`
+	Valid        bool         `json:"valid"` // Valid is true if SpecimenType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSpecimenType) Scan(value interface{}) error {
+	if value == nil {
+		ns.SpecimenType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SpecimenType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSpecimenType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SpecimenType), nil
 }
 
 type SyncOperation string
@@ -1961,6 +2192,55 @@ type HospitalSetting struct {
 	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type ImagingOrder struct {
+	ID                 uuid.UUID          `json:"id"`
+	HospitalID         uuid.UUID          `json:"hospital_id"`
+	PatientID          uuid.UUID          `json:"patient_id"`
+	SessionID          pgtype.UUID        `json:"session_id"`
+	OrderedBy          uuid.UUID          `json:"ordered_by"`
+	OrderDate          pgtype.Date        `json:"order_date"`
+	OrderTime          pgtype.Time        `json:"order_time"`
+	Modality           ImagingModality    `json:"modality"`
+	BodyPart           string             `json:"body_part"`
+	Laterality         pgtype.Text        `json:"laterality"`
+	ClinicalIndication string             `json:"clinical_indication"`
+	Priority           LabPriority        `json:"priority"`
+	Status             LabStatus          `json:"status"`
+	ScheduledDate      pgtype.Date        `json:"scheduled_date"`
+	ScheduledTime      pgtype.Time        `json:"scheduled_time"`
+	PerformedAt        pgtype.Timestamptz `json:"performed_at"`
+	PerformedBy        pgtype.Text        `json:"performed_by"`
+	CancelledBy        pgtype.UUID        `json:"cancelled_by"`
+	CancelledAt        pgtype.Timestamptz `json:"cancelled_at"`
+	CancellationReason pgtype.Text        `json:"cancellation_reason"`
+	Notes              pgtype.Text        `json:"notes"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt          pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type ImagingResult struct {
+	ID              uuid.UUID          `json:"id"`
+	HospitalID      uuid.UUID          `json:"hospital_id"`
+	OrderID         uuid.UUID          `json:"order_id"`
+	ReportText      string             `json:"report_text"`
+	Impression      pgtype.Text        `json:"impression"`
+	Recommendations pgtype.Text        `json:"recommendations"`
+	ReportedBy      uuid.UUID          `json:"reported_by"`
+	ReportDate      pgtype.Date        `json:"report_date"`
+	ReportTime      pgtype.Time        `json:"report_time"`
+	VerifiedBy      pgtype.UUID        `json:"verified_by"`
+	VerifiedAt      pgtype.Timestamptz `json:"verified_at"`
+	ImageCount      pgtype.Int4        `json:"image_count"`
+	ImageUrls       []byte             `json:"image_urls"`
+	IsAbnormal      bool               `json:"is_abnormal"`
+	IsCritical      bool               `json:"is_critical"`
+	Notes           pgtype.Text        `json:"notes"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type InfectionControlLog struct {
 	ID                        uuid.UUID           `json:"id"`
 	HospitalID                uuid.UUID           `json:"hospital_id"`
@@ -1987,6 +2267,162 @@ type InfectionControlLog struct {
 	CreatedAt                 pgtype.Timestamptz  `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz  `json:"updated_at"`
 	DeletedAt                 pgtype.Timestamptz  `json:"deleted_at"`
+}
+
+type LabCriticalAlert struct {
+	ID               uuid.UUID          `json:"id"`
+	HospitalID       uuid.UUID          `json:"hospital_id"`
+	ResultID         uuid.UUID          `json:"result_id"`
+	PatientID        uuid.UUID          `json:"patient_id"`
+	TestName         string             `json:"test_name"`
+	CriticalValue    string             `json:"critical_value"`
+	ReferenceRange   pgtype.Text        `json:"reference_range"`
+	Severity         string             `json:"severity"`
+	AlertedAt        pgtype.Timestamptz `json:"alerted_at"`
+	AcknowledgedBy   pgtype.UUID        `json:"acknowledged_by"`
+	AcknowledgedAt   pgtype.Timestamptz `json:"acknowledged_at"`
+	ActionTaken      pgtype.Text        `json:"action_taken"`
+	DoctorNotified   bool               `json:"doctor_notified"`
+	DoctorNotifiedAt pgtype.Timestamptz `json:"doctor_notified_at"`
+	Notes            pgtype.Text        `json:"notes"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt        pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type LabOrder struct {
+	ID                 uuid.UUID          `json:"id"`
+	HospitalID         uuid.UUID          `json:"hospital_id"`
+	PatientID          uuid.UUID          `json:"patient_id"`
+	SessionID          pgtype.UUID        `json:"session_id"`
+	OrderedBy          uuid.UUID          `json:"ordered_by"`
+	OrderDate          pgtype.Date        `json:"order_date"`
+	OrderTime          pgtype.Time        `json:"order_time"`
+	Priority           LabPriority        `json:"priority"`
+	Status             LabStatus          `json:"status"`
+	ClinicalNotes      pgtype.Text        `json:"clinical_notes"`
+	DiagnosisCode      pgtype.Text        `json:"diagnosis_code"`
+	CancelledBy        pgtype.UUID        `json:"cancelled_by"`
+	CancelledAt        pgtype.Timestamptz `json:"cancelled_at"`
+	CancellationReason pgtype.Text        `json:"cancellation_reason"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt          pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type LabOrderItem struct {
+	ID                  uuid.UUID          `json:"id"`
+	HospitalID          uuid.UUID          `json:"hospital_id"`
+	OrderID             uuid.UUID          `json:"order_id"`
+	TestID              uuid.UUID          `json:"test_id"`
+	SpecimenType        SpecimenType       `json:"specimen_type"`
+	SpecimenCollectedBy pgtype.UUID        `json:"specimen_collected_by"`
+	SpecimenCollectedAt pgtype.Timestamptz `json:"specimen_collected_at"`
+	SpecimenBarcode     pgtype.Text        `json:"specimen_barcode"`
+	SpecimenQuality     pgtype.Text        `json:"specimen_quality"`
+	SpecimenRejected    bool               `json:"specimen_rejected"`
+	RejectionReason     pgtype.Text        `json:"rejection_reason"`
+	Status              LabStatus          `json:"status"`
+	Notes               pgtype.Text        `json:"notes"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt           pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type LabPanel struct {
+	ID          uuid.UUID          `json:"id"`
+	HospitalID  uuid.UUID          `json:"hospital_id"`
+	Code        string             `json:"code"`
+	Name        string             `json:"name"`
+	Description pgtype.Text        `json:"description"`
+	Tests       []byte             `json:"tests"`
+	CostAmount  pgtype.Numeric     `json:"cost_amount"`
+	IsActive    bool               `json:"is_active"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type LabReferenceRange struct {
+	ID            uuid.UUID          `json:"id"`
+	HospitalID    uuid.UUID          `json:"hospital_id"`
+	TestID        uuid.UUID          `json:"test_id"`
+	AgeGroup      pgtype.Text        `json:"age_group"`
+	Sex           pgtype.Text        `json:"sex"`
+	MinValue      pgtype.Numeric     `json:"min_value"`
+	MaxValue      pgtype.Numeric     `json:"max_value"`
+	CriticalLow   pgtype.Numeric     `json:"critical_low"`
+	CriticalHigh  pgtype.Numeric     `json:"critical_high"`
+	ReferenceText pgtype.Text        `json:"reference_text"`
+	IsDefault     bool               `json:"is_default"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt     pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type LabResult struct {
+	ID              uuid.UUID          `json:"id"`
+	HospitalID      uuid.UUID          `json:"hospital_id"`
+	OrderItemID     uuid.UUID          `json:"order_item_id"`
+	ValueText       pgtype.Text        `json:"value_text"`
+	ValueNumeric    pgtype.Numeric     `json:"value_numeric"`
+	Unit            pgtype.Text        `json:"unit"`
+	ReferenceRange  pgtype.Text        `json:"reference_range"`
+	IsAbnormal      bool               `json:"is_abnormal"`
+	IsCritical      bool               `json:"is_critical"`
+	Status          ResultStatus       `json:"status"`
+	ResultDate      pgtype.Date        `json:"result_date"`
+	ResultTime      pgtype.Time        `json:"result_time"`
+	EnteredBy       uuid.UUID          `json:"entered_by"`
+	VerifiedBy      pgtype.UUID        `json:"verified_by"`
+	VerifiedAt      pgtype.Timestamptz `json:"verified_at"`
+	Source          pgtype.Text        `json:"source"`
+	ExternalLabName pgtype.Text        `json:"external_lab_name"`
+	Notes           pgtype.Text        `json:"notes"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type LabTestCatalog struct {
+	ID               uuid.UUID          `json:"id"`
+	HospitalID       uuid.UUID          `json:"hospital_id"`
+	Code             string             `json:"code"`
+	Name             string             `json:"name"`
+	Category         pgtype.Text        `json:"category"`
+	Unit             pgtype.Text        `json:"unit"`
+	TurnaroundHrs    int32              `json:"turnaround_hrs"`
+	SpecimenType     SpecimenType       `json:"specimen_type"`
+	SpecimenVolumeMl pgtype.Numeric     `json:"specimen_volume_ml"`
+	RequiresFasting  bool               `json:"requires_fasting"`
+	CostAmount       pgtype.Numeric     `json:"cost_amount"`
+	IsActive         bool               `json:"is_active"`
+	Notes            pgtype.Text        `json:"notes"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt        pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type MicrobiologyResult struct {
+	ID                        uuid.UUID          `json:"id"`
+	HospitalID                uuid.UUID          `json:"hospital_id"`
+	OrderItemID               uuid.UUID          `json:"order_item_id"`
+	CultureDate               pgtype.Date        `json:"culture_date"`
+	CultureTime               pgtype.Time        `json:"culture_time"`
+	GrowthDetected            bool               `json:"growth_detected"`
+	Organism                  pgtype.Text        `json:"organism"`
+	OrganismCount             pgtype.Text        `json:"organism_count"`
+	Sensitivity               []byte             `json:"sensitivity"`
+	AntibioticRecommendations pgtype.Text        `json:"antibiotic_recommendations"`
+	ResultDate                pgtype.Date        `json:"result_date"`
+	ResultTime                pgtype.Time        `json:"result_time"`
+	ReportedBy                uuid.UUID          `json:"reported_by"`
+	VerifiedBy                pgtype.UUID        `json:"verified_by"`
+	VerifiedAt                pgtype.Timestamptz `json:"verified_at"`
+	Notes                     pgtype.Text        `json:"notes"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt                 pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type NextOfKin struct {
