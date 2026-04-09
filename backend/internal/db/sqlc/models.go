@@ -383,6 +383,53 @@ func (ns NullBloodType) Value() (driver.Value, error) {
 	return string(ns.BloodType), nil
 }
 
+type CertificationType string
+
+const (
+	CertificationTypeRegulatory       CertificationType = "regulatory"
+	CertificationTypeCalibration      CertificationType = "calibration"
+	CertificationTypeSafetyInspection CertificationType = "safety_inspection"
+	CertificationTypeQualityAssurance CertificationType = "quality_assurance"
+	CertificationTypeWarranty         CertificationType = "warranty"
+	CertificationTypeInsurance        CertificationType = "insurance"
+	CertificationTypeOther            CertificationType = "other"
+)
+
+func (e *CertificationType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = CertificationType(s)
+	case string:
+		*e = CertificationType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for CertificationType: %T", src)
+	}
+	return nil
+}
+
+type NullCertificationType struct {
+	CertificationType CertificationType `json:"certification_type"`
+	Valid             bool              `json:"valid"` // Valid is true if CertificationType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullCertificationType) Scan(value interface{}) error {
+	if value == nil {
+		ns.CertificationType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.CertificationType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullCertificationType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.CertificationType), nil
+}
+
 type ComorbidityStatus string
 
 const (
@@ -608,6 +655,57 @@ func (ns NullConsentType) Value() (driver.Value, error) {
 	return string(ns.ConsentType), nil
 }
 
+type ConsumableCategory string
+
+const (
+	ConsumableCategoryDialyzer     ConsumableCategory = "dialyzer"
+	ConsumableCategoryBloodline    ConsumableCategory = "bloodline"
+	ConsumableCategoryAvNeedle     ConsumableCategory = "av_needle"
+	ConsumableCategorySyringe      ConsumableCategory = "syringe"
+	ConsumableCategoryGauze        ConsumableCategory = "gauze"
+	ConsumableCategoryGloves       ConsumableCategory = "gloves"
+	ConsumableCategoryMask         ConsumableCategory = "mask"
+	ConsumableCategoryDisinfectant ConsumableCategory = "disinfectant"
+	ConsumableCategorySaline       ConsumableCategory = "saline"
+	ConsumableCategoryHeparin      ConsumableCategory = "heparin"
+	ConsumableCategoryOther        ConsumableCategory = "other"
+)
+
+func (e *ConsumableCategory) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ConsumableCategory(s)
+	case string:
+		*e = ConsumableCategory(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ConsumableCategory: %T", src)
+	}
+	return nil
+}
+
+type NullConsumableCategory struct {
+	ConsumableCategory ConsumableCategory `json:"consumable_category"`
+	Valid              bool               `json:"valid"` // Valid is true if ConsumableCategory is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullConsumableCategory) Scan(value interface{}) error {
+	if value == nil {
+		ns.ConsumableCategory, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ConsumableCategory.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullConsumableCategory) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ConsumableCategory), nil
+}
+
 type ContactType string
 
 const (
@@ -787,6 +885,151 @@ func (ns NullDischargeType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.DischargeType), nil
+}
+
+type EquipmentCategory string
+
+const (
+	EquipmentCategoryDialysisMachine    EquipmentCategory = "dialysis_machine"
+	EquipmentCategoryRoUnit             EquipmentCategory = "ro_unit"
+	EquipmentCategoryWaterSoftener      EquipmentCategory = "water_softener"
+	EquipmentCategoryBpMonitor          EquipmentCategory = "bp_monitor"
+	EquipmentCategoryWeighingScale      EquipmentCategory = "weighing_scale"
+	EquipmentCategoryEcgMachine         EquipmentCategory = "ecg_machine"
+	EquipmentCategoryPulseOximeter      EquipmentCategory = "pulse_oximeter"
+	EquipmentCategoryGlucometer         EquipmentCategory = "glucometer"
+	EquipmentCategoryThermometer        EquipmentCategory = "thermometer"
+	EquipmentCategoryWheelchair         EquipmentCategory = "wheelchair"
+	EquipmentCategoryStretcher          EquipmentCategory = "stretcher"
+	EquipmentCategoryOxygenConcentrator EquipmentCategory = "oxygen_concentrator"
+	EquipmentCategoryDefibrillator      EquipmentCategory = "defibrillator"
+	EquipmentCategoryOther              EquipmentCategory = "other"
+)
+
+func (e *EquipmentCategory) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = EquipmentCategory(s)
+	case string:
+		*e = EquipmentCategory(s)
+	default:
+		return fmt.Errorf("unsupported scan type for EquipmentCategory: %T", src)
+	}
+	return nil
+}
+
+type NullEquipmentCategory struct {
+	EquipmentCategory EquipmentCategory `json:"equipment_category"`
+	Valid             bool              `json:"valid"` // Valid is true if EquipmentCategory is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullEquipmentCategory) Scan(value interface{}) error {
+	if value == nil {
+		ns.EquipmentCategory, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.EquipmentCategory.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullEquipmentCategory) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.EquipmentCategory), nil
+}
+
+type EquipmentStatus string
+
+const (
+	EquipmentStatusOperational    EquipmentStatus = "operational"
+	EquipmentStatusInUse          EquipmentStatus = "in_use"
+	EquipmentStatusMaintenance    EquipmentStatus = "maintenance"
+	EquipmentStatusFaulty         EquipmentStatus = "faulty"
+	EquipmentStatusUnderRepair    EquipmentStatus = "under_repair"
+	EquipmentStatusDecommissioned EquipmentStatus = "decommissioned"
+	EquipmentStatusRetired        EquipmentStatus = "retired"
+)
+
+func (e *EquipmentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = EquipmentStatus(s)
+	case string:
+		*e = EquipmentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for EquipmentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullEquipmentStatus struct {
+	EquipmentStatus EquipmentStatus `json:"equipment_status"`
+	Valid           bool            `json:"valid"` // Valid is true if EquipmentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullEquipmentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.EquipmentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.EquipmentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullEquipmentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.EquipmentStatus), nil
+}
+
+type FaultSeverity string
+
+const (
+	FaultSeverityMinor    FaultSeverity = "minor"
+	FaultSeverityModerate FaultSeverity = "moderate"
+	FaultSeveritySevere   FaultSeverity = "severe"
+	FaultSeverityCritical FaultSeverity = "critical"
+)
+
+func (e *FaultSeverity) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FaultSeverity(s)
+	case string:
+		*e = FaultSeverity(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FaultSeverity: %T", src)
+	}
+	return nil
+}
+
+type NullFaultSeverity struct {
+	FaultSeverity FaultSeverity `json:"fault_severity"`
+	Valid         bool          `json:"valid"` // Valid is true if FaultSeverity is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFaultSeverity) Scan(value interface{}) error {
+	if value == nil {
+		ns.FaultSeverity, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FaultSeverity.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFaultSeverity) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FaultSeverity), nil
 }
 
 type FlagType string
@@ -1065,6 +1308,53 @@ func (ns NullMachineStatus) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.MachineStatus), nil
+}
+
+type MaintenanceType string
+
+const (
+	MaintenanceTypeScheduled   MaintenanceType = "scheduled"
+	MaintenanceTypeCorrective  MaintenanceType = "corrective"
+	MaintenanceTypePreventive  MaintenanceType = "preventive"
+	MaintenanceTypeCalibration MaintenanceType = "calibration"
+	MaintenanceTypeInspection  MaintenanceType = "inspection"
+	MaintenanceTypeRepair      MaintenanceType = "repair"
+	MaintenanceTypeReplacement MaintenanceType = "replacement"
+)
+
+func (e *MaintenanceType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MaintenanceType(s)
+	case string:
+		*e = MaintenanceType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MaintenanceType: %T", src)
+	}
+	return nil
+}
+
+type NullMaintenanceType struct {
+	MaintenanceType MaintenanceType `json:"maintenance_type"`
+	Valid           bool            `json:"valid"` // Valid is true if MaintenanceType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMaintenanceType) Scan(value interface{}) error {
+	if value == nil {
+		ns.MaintenanceType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MaintenanceType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMaintenanceType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MaintenanceType), nil
 }
 
 type MaritalStatus string
@@ -2169,6 +2459,60 @@ type Consent struct {
 	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type Consumable struct {
+	ID            uuid.UUID          `json:"id"`
+	HospitalID    uuid.UUID          `json:"hospital_id"`
+	Name          string             `json:"name"`
+	Category      ConsumableCategory `json:"category"`
+	Unit          string             `json:"unit"`
+	Manufacturer  pgtype.Text        `json:"manufacturer"`
+	Model         pgtype.Text        `json:"model"`
+	IsReusable    bool               `json:"is_reusable"`
+	MaxReuseCount pgtype.Int4        `json:"max_reuse_count"`
+	MinStockLevel pgtype.Int4        `json:"min_stock_level"`
+	CostPerUnit   pgtype.Numeric     `json:"cost_per_unit"`
+	Notes         pgtype.Text        `json:"notes"`
+	IsActive      bool               `json:"is_active"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt     pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type ConsumablesInventory struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	ConsumableID      uuid.UUID          `json:"consumable_id"`
+	BatchNumber       pgtype.Text        `json:"batch_number"`
+	QuantityCurrent   int32              `json:"quantity_current"`
+	QuantityReserved  int32              `json:"quantity_reserved"`
+	QuantityAvailable int32              `json:"quantity_available"`
+	UnitCost          pgtype.Numeric     `json:"unit_cost"`
+	ExpiryDate        pgtype.Date        `json:"expiry_date"`
+	ReceivedDate      pgtype.Date        `json:"received_date"`
+	SupplierName      pgtype.Text        `json:"supplier_name"`
+	StorageLocation   pgtype.Text        `json:"storage_location"`
+	IsLowStock        bool               `json:"is_low_stock"`
+	Notes             pgtype.Text        `json:"notes"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type ConsumablesUsage struct {
+	ID           uuid.UUID          `json:"id"`
+	HospitalID   uuid.UUID          `json:"hospital_id"`
+	SessionID    uuid.UUID          `json:"session_id"`
+	ConsumableID uuid.UUID          `json:"consumable_id"`
+	InventoryID  pgtype.UUID        `json:"inventory_id"`
+	QuantityUsed int32              `json:"quantity_used"`
+	ReuseNumber  pgtype.Int4        `json:"reuse_number"`
+	RecordedBy   pgtype.UUID        `json:"recorded_by"`
+	Notes        pgtype.Text        `json:"notes"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt    pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type Department struct {
 	ID          uuid.UUID          `json:"id"`
 	HospitalID  uuid.UUID          `json:"hospital_id"`
@@ -2382,6 +2726,89 @@ type EpoRecord struct {
 	CreatedAt              pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt              pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Equipment struct {
+	ID                 uuid.UUID          `json:"id"`
+	HospitalID         uuid.UUID          `json:"hospital_id"`
+	Name               string             `json:"name"`
+	Category           EquipmentCategory  `json:"category"`
+	SerialNumber       pgtype.Text        `json:"serial_number"`
+	Model              pgtype.Text        `json:"model"`
+	Manufacturer       pgtype.Text        `json:"manufacturer"`
+	PurchaseDate       pgtype.Date        `json:"purchase_date"`
+	PurchaseCost       pgtype.Numeric     `json:"purchase_cost"`
+	WarrantyExpiryDate pgtype.Date        `json:"warranty_expiry_date"`
+	Status             EquipmentStatus    `json:"status"`
+	Location           pgtype.Text        `json:"location"`
+	DepartmentID       pgtype.UUID        `json:"department_id"`
+	Notes              pgtype.Text        `json:"notes"`
+	IsActive           bool               `json:"is_active"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt          pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type EquipmentCertification struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	EquipmentID       uuid.UUID          `json:"equipment_id"`
+	CertificationType CertificationType  `json:"certification_type"`
+	CertificateNumber pgtype.Text        `json:"certificate_number"`
+	IssuedBy          string             `json:"issued_by"`
+	IssuedDate        pgtype.Date        `json:"issued_date"`
+	ValidFrom         pgtype.Date        `json:"valid_from"`
+	ValidUntil        pgtype.Date        `json:"valid_until"`
+	DocumentUrl       pgtype.Text        `json:"document_url"`
+	FileAttachmentID  pgtype.UUID        `json:"file_attachment_id"`
+	Notes             pgtype.Text        `json:"notes"`
+	IsActive          bool               `json:"is_active"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type EquipmentFault struct {
+	ID                    uuid.UUID          `json:"id"`
+	HospitalID            uuid.UUID          `json:"hospital_id"`
+	EquipmentID           uuid.UUID          `json:"equipment_id"`
+	ReportedBy            uuid.UUID          `json:"reported_by"`
+	ReportedAt            pgtype.Timestamptz `json:"reported_at"`
+	FaultDescription      string             `json:"fault_description"`
+	Severity              FaultSeverity      `json:"severity"`
+	IsEquipmentUnusable   bool               `json:"is_equipment_unusable"`
+	ResolvedBy            pgtype.UUID        `json:"resolved_by"`
+	ResolvedAt            pgtype.Timestamptz `json:"resolved_at"`
+	ResolutionDescription pgtype.Text        `json:"resolution_description"`
+	DowntimeMinutes       pgtype.Int4        `json:"downtime_minutes"`
+	Cost                  pgtype.Numeric     `json:"cost"`
+	IsResolved            bool               `json:"is_resolved"`
+	Notes                 pgtype.Text        `json:"notes"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt             pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type EquipmentMaintenance struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	EquipmentID       uuid.UUID          `json:"equipment_id"`
+	MaintenanceType   MaintenanceType    `json:"maintenance_type"`
+	ScheduledDate     pgtype.Date        `json:"scheduled_date"`
+	PerformedDate     pgtype.Date        `json:"performed_date"`
+	PerformedBy       pgtype.UUID        `json:"performed_by"`
+	TechnicianName    pgtype.Text        `json:"technician_name"`
+	TechnicianCompany pgtype.Text        `json:"technician_company"`
+	NextDueDate       pgtype.Date        `json:"next_due_date"`
+	Cost              pgtype.Numeric     `json:"cost"`
+	Findings          pgtype.Text        `json:"findings"`
+	ActionsTaken      pgtype.Text        `json:"actions_taken"`
+	PartsReplaced     pgtype.Text        `json:"parts_replaced"`
+	IsCompleted       bool               `json:"is_completed"`
+	Notes             pgtype.Text        `json:"notes"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type FileAttachment struct {
