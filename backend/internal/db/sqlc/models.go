@@ -1112,6 +1112,109 @@ func (ns NullMaritalStatus) Value() (driver.Value, error) {
 	return string(ns.MaritalStatus), nil
 }
 
+type MedicationForm string
+
+const (
+	MedicationFormTablet      MedicationForm = "tablet"
+	MedicationFormCapsule     MedicationForm = "capsule"
+	MedicationFormSyrup       MedicationForm = "syrup"
+	MedicationFormInjection   MedicationForm = "injection"
+	MedicationFormInfusion    MedicationForm = "infusion"
+	MedicationFormPowder      MedicationForm = "powder"
+	MedicationFormCream       MedicationForm = "cream"
+	MedicationFormOintment    MedicationForm = "ointment"
+	MedicationFormInhaler     MedicationForm = "inhaler"
+	MedicationFormDrops       MedicationForm = "drops"
+	MedicationFormPatch       MedicationForm = "patch"
+	MedicationFormSuppository MedicationForm = "suppository"
+)
+
+func (e *MedicationForm) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MedicationForm(s)
+	case string:
+		*e = MedicationForm(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MedicationForm: %T", src)
+	}
+	return nil
+}
+
+type NullMedicationForm struct {
+	MedicationForm MedicationForm `json:"medication_form"`
+	Valid          bool           `json:"valid"` // Valid is true if MedicationForm is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMedicationForm) Scan(value interface{}) error {
+	if value == nil {
+		ns.MedicationForm, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MedicationForm.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMedicationForm) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MedicationForm), nil
+}
+
+type MedicationRoute string
+
+const (
+	MedicationRouteOral            MedicationRoute = "oral"
+	MedicationRouteIv              MedicationRoute = "iv"
+	MedicationRouteIm              MedicationRoute = "im"
+	MedicationRouteSc              MedicationRoute = "sc"
+	MedicationRouteTopical         MedicationRoute = "topical"
+	MedicationRouteInhaled         MedicationRoute = "inhaled"
+	MedicationRouteRectal          MedicationRoute = "rectal"
+	MedicationRouteSublingual      MedicationRoute = "sublingual"
+	MedicationRouteBuccal          MedicationRoute = "buccal"
+	MedicationRouteTransdermal     MedicationRoute = "transdermal"
+	MedicationRouteIntraperitoneal MedicationRoute = "intraperitoneal"
+)
+
+func (e *MedicationRoute) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MedicationRoute(s)
+	case string:
+		*e = MedicationRoute(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MedicationRoute: %T", src)
+	}
+	return nil
+}
+
+type NullMedicationRoute struct {
+	MedicationRoute MedicationRoute `json:"medication_route"`
+	Valid           bool            `json:"valid"` // Valid is true if MedicationRoute is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMedicationRoute) Scan(value interface{}) error {
+	if value == nil {
+		ns.MedicationRoute, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MedicationRoute.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMedicationRoute) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MedicationRoute), nil
+}
+
 type NotificationPriority string
 
 const (
@@ -1154,6 +1257,51 @@ func (ns NullNotificationPriority) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.NotificationPriority), nil
+}
+
+type PrescriptionStatus string
+
+const (
+	PrescriptionStatusActive       PrescriptionStatus = "active"
+	PrescriptionStatusCompleted    PrescriptionStatus = "completed"
+	PrescriptionStatusCancelled    PrescriptionStatus = "cancelled"
+	PrescriptionStatusDiscontinued PrescriptionStatus = "discontinued"
+	PrescriptionStatusOnHold       PrescriptionStatus = "on_hold"
+)
+
+func (e *PrescriptionStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PrescriptionStatus(s)
+	case string:
+		*e = PrescriptionStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PrescriptionStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPrescriptionStatus struct {
+	PrescriptionStatus PrescriptionStatus `json:"prescription_status"`
+	Valid              bool               `json:"valid"` // Valid is true if PrescriptionStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPrescriptionStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PrescriptionStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PrescriptionStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPrescriptionStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PrescriptionStatus), nil
 }
 
 type ReferralDirection string
@@ -1558,6 +1706,54 @@ func (ns NullSpecimenType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.SpecimenType), nil
+}
+
+type StockMovementType string
+
+const (
+	StockMovementTypePurchase    StockMovementType = "purchase"
+	StockMovementTypeDispensed   StockMovementType = "dispensed"
+	StockMovementTypeReturned    StockMovementType = "returned"
+	StockMovementTypeExpired     StockMovementType = "expired"
+	StockMovementTypeDamaged     StockMovementType = "damaged"
+	StockMovementTypeAdjustment  StockMovementType = "adjustment"
+	StockMovementTypeTransferIn  StockMovementType = "transfer_in"
+	StockMovementTypeTransferOut StockMovementType = "transfer_out"
+)
+
+func (e *StockMovementType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StockMovementType(s)
+	case string:
+		*e = StockMovementType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StockMovementType: %T", src)
+	}
+	return nil
+}
+
+type NullStockMovementType struct {
+	StockMovementType StockMovementType `json:"stock_movement_type"`
+	Valid             bool              `json:"valid"` // Valid is true if StockMovementType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStockMovementType) Scan(value interface{}) error {
+	if value == nil {
+		ns.StockMovementType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StockMovementType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStockMovementType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StockMovementType), nil
 }
 
 type SyncOperation string
@@ -2120,6 +2316,24 @@ type DialysisSession struct {
 	DeletedAt              pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type DrugInteraction struct {
+	ID                       uuid.UUID          `json:"id"`
+	HospitalID               uuid.UUID          `json:"hospital_id"`
+	MedicationAID            uuid.UUID          `json:"medication_a_id"`
+	MedicationBID            uuid.UUID          `json:"medication_b_id"`
+	Severity                 string             `json:"severity"`
+	InteractionType          pgtype.Text        `json:"interaction_type"`
+	Description              string             `json:"description"`
+	ClinicalEffect           pgtype.Text        `json:"clinical_effect"`
+	ManagementRecommendation pgtype.Text        `json:"management_recommendation"`
+	EvidenceLevel            pgtype.Text        `json:"evidence_level"`
+	ReferenceSource          pgtype.Text        `json:"reference_source"`
+	IsActive                 bool               `json:"is_active"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt                pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type DryWeightRecord struct {
 	ID                      uuid.UUID          `json:"id"`
 	HospitalID              uuid.UUID          `json:"hospital_id"`
@@ -2142,6 +2356,32 @@ type DryWeightRecord struct {
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt               pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type EpoRecord struct {
+	ID                     uuid.UUID          `json:"id"`
+	HospitalID             uuid.UUID          `json:"hospital_id"`
+	PatientID              uuid.UUID          `json:"patient_id"`
+	SessionID              pgtype.UUID        `json:"session_id"`
+	AdministeredBy         uuid.UUID          `json:"administered_by"`
+	AdministeredAt         pgtype.Timestamptz `json:"administered_at"`
+	ProductName            string             `json:"product_name"`
+	DoseUnits              int32              `json:"dose_units"`
+	Route                  MedicationRoute    `json:"route"`
+	InjectionSite          pgtype.Text        `json:"injection_site"`
+	HbAtTime               pgtype.Numeric     `json:"hb_at_time"`
+	HbTargetMin            pgtype.Numeric     `json:"hb_target_min"`
+	HbTargetMax            pgtype.Numeric     `json:"hb_target_max"`
+	FerritinAtTime         pgtype.Numeric     `json:"ferritin_at_time"`
+	TsatAtTime             pgtype.Numeric     `json:"tsat_at_time"`
+	DoseAdjustmentReason   pgtype.Text        `json:"dose_adjustment_reason"`
+	NextDoseRecommendation pgtype.Int4        `json:"next_dose_recommendation"`
+	AdverseReaction        bool               `json:"adverse_reaction"`
+	AdverseReactionDetails pgtype.Text        `json:"adverse_reaction_details"`
+	Notes                  pgtype.Text        `json:"notes"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt              pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type FileAttachment struct {
@@ -2267,6 +2507,34 @@ type InfectionControlLog struct {
 	CreatedAt                 pgtype.Timestamptz  `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz  `json:"updated_at"`
 	DeletedAt                 pgtype.Timestamptz  `json:"deleted_at"`
+}
+
+type IronTherapyRecord struct {
+	ID                      uuid.UUID          `json:"id"`
+	HospitalID              uuid.UUID          `json:"hospital_id"`
+	PatientID               uuid.UUID          `json:"patient_id"`
+	SessionID               pgtype.UUID        `json:"session_id"`
+	AdministeredBy          uuid.UUID          `json:"administered_by"`
+	AdministeredAt          pgtype.Timestamptz `json:"administered_at"`
+	Product                 string             `json:"product"`
+	DoseMg                  int32              `json:"dose_mg"`
+	Route                   MedicationRoute    `json:"route"`
+	InfusionDurationMins    pgtype.Int4        `json:"infusion_duration_mins"`
+	Dilution                pgtype.Text        `json:"dilution"`
+	FerritinAtTime          pgtype.Numeric     `json:"ferritin_at_time"`
+	FerritinTargetMin       pgtype.Numeric     `json:"ferritin_target_min"`
+	FerritinTargetMax       pgtype.Numeric     `json:"ferritin_target_max"`
+	TsatAtTime              pgtype.Numeric     `json:"tsat_at_time"`
+	HbAtTime                pgtype.Numeric     `json:"hb_at_time"`
+	AdverseReaction         bool               `json:"adverse_reaction"`
+	AdverseReactionType     pgtype.Text        `json:"adverse_reaction_type"`
+	AdverseReactionSeverity pgtype.Text        `json:"adverse_reaction_severity"`
+	TreatmentGiven          pgtype.Text        `json:"treatment_given"`
+	TestDoseGiven           bool               `json:"test_dose_given"`
+	Notes                   pgtype.Text        `json:"notes"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt               pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type LabCriticalAlert struct {
@@ -2401,6 +2669,53 @@ type LabTestCatalog struct {
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt        pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Medication struct {
+	ID                   uuid.UUID          `json:"id"`
+	HospitalID           uuid.UUID          `json:"hospital_id"`
+	GenericName          string             `json:"generic_name"`
+	BrandNames           []byte             `json:"brand_names"`
+	DrugClass            pgtype.Text        `json:"drug_class"`
+	Form                 MedicationForm     `json:"form"`
+	Strength             pgtype.Text        `json:"strength"`
+	Unit                 pgtype.Text        `json:"unit"`
+	IsControlled         bool               `json:"is_controlled"`
+	RequiresPrescription bool               `json:"requires_prescription"`
+	IsEssentialWho       bool               `json:"is_essential_who"`
+	StorageConditions    pgtype.Text        `json:"storage_conditions"`
+	CostPerUnit          pgtype.Numeric     `json:"cost_per_unit"`
+	ReorderLevel         pgtype.Int4        `json:"reorder_level"`
+	IsActive             bool               `json:"is_active"`
+	Notes                pgtype.Text        `json:"notes"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt            pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type MedicationAdministration struct {
+	ID                     uuid.UUID          `json:"id"`
+	HospitalID             uuid.UUID          `json:"hospital_id"`
+	PrescriptionItemID     uuid.UUID          `json:"prescription_item_id"`
+	PatientID              uuid.UUID          `json:"patient_id"`
+	SessionID              pgtype.UUID        `json:"session_id"`
+	AdministeredBy         uuid.UUID          `json:"administered_by"`
+	ScheduledTime          pgtype.Timestamptz `json:"scheduled_time"`
+	AdministeredAt         pgtype.Timestamptz `json:"administered_at"`
+	DoseGiven              string             `json:"dose_given"`
+	Route                  MedicationRoute    `json:"route"`
+	Site                   pgtype.Text        `json:"site"`
+	IsRefused              bool               `json:"is_refused"`
+	RefusalReason          pgtype.Text        `json:"refusal_reason"`
+	IsOmitted              bool               `json:"is_omitted"`
+	OmissionReason         pgtype.Text        `json:"omission_reason"`
+	AdverseReaction        bool               `json:"adverse_reaction"`
+	AdverseReactionDetails pgtype.Text        `json:"adverse_reaction_details"`
+	WitnessedBy            pgtype.UUID        `json:"witnessed_by"`
+	Notes                  pgtype.Text        `json:"notes"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt              pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type MicrobiologyResult struct {
@@ -2538,6 +2853,26 @@ type PatientIdentifier struct {
 	DeletedAt        pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type PharmacyStock struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	MedicationID      uuid.UUID          `json:"medication_id"`
+	BatchNumber       string             `json:"batch_number"`
+	QuantityCurrent   int32              `json:"quantity_current"`
+	QuantityReserved  int32              `json:"quantity_reserved"`
+	QuantityAvailable int32              `json:"quantity_available"`
+	UnitCost          pgtype.Numeric     `json:"unit_cost"`
+	ExpiryDate        pgtype.Date        `json:"expiry_date"`
+	ReceivedDate      pgtype.Date        `json:"received_date"`
+	SupplierName      pgtype.Text        `json:"supplier_name"`
+	StorageLocation   pgtype.Text        `json:"storage_location"`
+	IsLowStock        bool               `json:"is_low_stock"`
+	Notes             pgtype.Text        `json:"notes"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type PowerOutageLog struct {
 	ID                      uuid.UUID          `json:"id"`
 	HospitalID              uuid.UUID          `json:"hospital_id"`
@@ -2562,6 +2897,54 @@ type PowerOutageLog struct {
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt               pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Prescription struct {
+	ID                   uuid.UUID          `json:"id"`
+	HospitalID           uuid.UUID          `json:"hospital_id"`
+	PatientID            uuid.UUID          `json:"patient_id"`
+	SessionID            pgtype.UUID        `json:"session_id"`
+	PrescribedBy         uuid.UUID          `json:"prescribed_by"`
+	PrescribedDate       pgtype.Date        `json:"prescribed_date"`
+	PrescribedTime       pgtype.Time        `json:"prescribed_time"`
+	Status               PrescriptionStatus `json:"status"`
+	ValidFrom            pgtype.Date        `json:"valid_from"`
+	ValidUntil           pgtype.Date        `json:"valid_until"`
+	Diagnosis            pgtype.Text        `json:"diagnosis"`
+	ClinicalNotes        pgtype.Text        `json:"clinical_notes"`
+	PharmacistVerifiedBy pgtype.UUID        `json:"pharmacist_verified_by"`
+	PharmacistVerifiedAt pgtype.Timestamptz `json:"pharmacist_verified_at"`
+	DispensedBy          pgtype.UUID        `json:"dispensed_by"`
+	DispensedAt          pgtype.Timestamptz `json:"dispensed_at"`
+	CancelledBy          pgtype.UUID        `json:"cancelled_by"`
+	CancelledAt          pgtype.Timestamptz `json:"cancelled_at"`
+	CancellationReason   pgtype.Text        `json:"cancellation_reason"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt            pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type PrescriptionItem struct {
+	ID                 uuid.UUID          `json:"id"`
+	HospitalID         uuid.UUID          `json:"hospital_id"`
+	PrescriptionID     uuid.UUID          `json:"prescription_id"`
+	MedicationID       uuid.UUID          `json:"medication_id"`
+	Dose               string             `json:"dose"`
+	Frequency          string             `json:"frequency"`
+	Route              MedicationRoute    `json:"route"`
+	DurationDays       pgtype.Int4        `json:"duration_days"`
+	QuantityPrescribed int32              `json:"quantity_prescribed"`
+	QuantityDispensed  pgtype.Int4        `json:"quantity_dispensed"`
+	Instructions       pgtype.Text        `json:"instructions"`
+	StartDate          pgtype.Date        `json:"start_date"`
+	EndDate            pgtype.Date        `json:"end_date"`
+	IsPrn              bool               `json:"is_prn"`
+	PrnIndication      pgtype.Text        `json:"prn_indication"`
+	IsStat             bool               `json:"is_stat"`
+	Notes              pgtype.Text        `json:"notes"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt          pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type Referral struct {
@@ -2727,6 +3110,29 @@ type SessionVital struct {
 	CreatedAt            pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt            pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type StockMovement struct {
+	ID             uuid.UUID          `json:"id"`
+	HospitalID     uuid.UUID          `json:"hospital_id"`
+	MedicationID   uuid.UUID          `json:"medication_id"`
+	StockID        pgtype.UUID        `json:"stock_id"`
+	MovementType   StockMovementType  `json:"movement_type"`
+	Quantity       int32              `json:"quantity"`
+	QuantityBefore int32              `json:"quantity_before"`
+	QuantityAfter  int32              `json:"quantity_after"`
+	UnitCost       pgtype.Numeric     `json:"unit_cost"`
+	TotalCost      pgtype.Numeric     `json:"total_cost"`
+	ReferenceType  pgtype.Text        `json:"reference_type"`
+	ReferenceID    pgtype.UUID        `json:"reference_id"`
+	PerformedBy    uuid.UUID          `json:"performed_by"`
+	MovementDate   pgtype.Date        `json:"movement_date"`
+	MovementTime   pgtype.Time        `json:"movement_time"`
+	Reason         pgtype.Text        `json:"reason"`
+	Notes          pgtype.Text        `json:"notes"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt      pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type SyncConflict struct {
