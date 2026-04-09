@@ -1402,6 +1402,97 @@ func (ns NullLabStatus) Value() (driver.Value, error) {
 	return string(ns.LabStatus), nil
 }
 
+type LeaveStatus string
+
+const (
+	LeaveStatusPending   LeaveStatus = "pending"
+	LeaveStatusApproved  LeaveStatus = "approved"
+	LeaveStatusRejected  LeaveStatus = "rejected"
+	LeaveStatusCancelled LeaveStatus = "cancelled"
+)
+
+func (e *LeaveStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = LeaveStatus(s)
+	case string:
+		*e = LeaveStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for LeaveStatus: %T", src)
+	}
+	return nil
+}
+
+type NullLeaveStatus struct {
+	LeaveStatus LeaveStatus `json:"leave_status"`
+	Valid       bool        `json:"valid"` // Valid is true if LeaveStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullLeaveStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.LeaveStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.LeaveStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullLeaveStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.LeaveStatus), nil
+}
+
+type LeaveType string
+
+const (
+	LeaveTypeAnnual        LeaveType = "annual"
+	LeaveTypeSick          LeaveType = "sick"
+	LeaveTypeMaternity     LeaveType = "maternity"
+	LeaveTypePaternity     LeaveType = "paternity"
+	LeaveTypeCompassionate LeaveType = "compassionate"
+	LeaveTypeStudy         LeaveType = "study"
+	LeaveTypeUnpaid        LeaveType = "unpaid"
+)
+
+func (e *LeaveType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = LeaveType(s)
+	case string:
+		*e = LeaveType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for LeaveType: %T", src)
+	}
+	return nil
+}
+
+type NullLeaveType struct {
+	LeaveType LeaveType `json:"leave_type"`
+	Valid     bool      `json:"valid"` // Valid is true if LeaveType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullLeaveType) Scan(value interface{}) error {
+	if value == nil {
+		ns.LeaveType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.LeaveType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullLeaveType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.LeaveType), nil
+}
+
 type MachineStatus string
 
 const (
@@ -1999,6 +2090,50 @@ func (ns NullResultStatus) Value() (driver.Value, error) {
 	return string(ns.ResultStatus), nil
 }
 
+type ScheduleType string
+
+const (
+	ScheduleTypeFixed    ScheduleType = "fixed"
+	ScheduleTypeRotating ScheduleType = "rotating"
+	ScheduleTypeOnCall   ScheduleType = "on_call"
+	ScheduleTypePartTime ScheduleType = "part_time"
+)
+
+func (e *ScheduleType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ScheduleType(s)
+	case string:
+		*e = ScheduleType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ScheduleType: %T", src)
+	}
+	return nil
+}
+
+type NullScheduleType struct {
+	ScheduleType ScheduleType `json:"schedule_type"`
+	Valid        bool         `json:"valid"` // Valid is true if ScheduleType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullScheduleType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ScheduleType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ScheduleType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullScheduleType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ScheduleType), nil
+}
+
 type SessionStatus string
 
 const (
@@ -2141,6 +2276,7 @@ const (
 	ShiftTypeAfternoon ShiftType = "afternoon"
 	ShiftTypeEvening   ShiftType = "evening"
 	ShiftTypeNight     ShiftType = "night"
+	ShiftTypeOnCall    ShiftType = "on_call"
 )
 
 func (e *ShiftType) Scan(src interface{}) error {
@@ -2226,6 +2362,59 @@ func (ns NullSpecimenType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.SpecimenType), nil
+}
+
+type StaffCadre string
+
+const (
+	StaffCadreDoctor             StaffCadre = "doctor"
+	StaffCadreNephrologist       StaffCadre = "nephrologist"
+	StaffCadreNurse              StaffCadre = "nurse"
+	StaffCadreDialysisTechnician StaffCadre = "dialysis_technician"
+	StaffCadrePharmacist         StaffCadre = "pharmacist"
+	StaffCadreLabTechnician      StaffCadre = "lab_technician"
+	StaffCadreRadiologist        StaffCadre = "radiologist"
+	StaffCadreSocialWorker       StaffCadre = "social_worker"
+	StaffCadreNutritionist       StaffCadre = "nutritionist"
+	StaffCadreAdmin              StaffCadre = "admin"
+	StaffCadreReceptionist       StaffCadre = "receptionist"
+	StaffCadreAccountant         StaffCadre = "accountant"
+	StaffCadreOther              StaffCadre = "other"
+)
+
+func (e *StaffCadre) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StaffCadre(s)
+	case string:
+		*e = StaffCadre(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StaffCadre: %T", src)
+	}
+	return nil
+}
+
+type NullStaffCadre struct {
+	StaffCadre StaffCadre `json:"staff_cadre"`
+	Valid      bool       `json:"valid"` // Valid is true if StaffCadre is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStaffCadre) Scan(value interface{}) error {
+	if value == nil {
+		ns.StaffCadre, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StaffCadre.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStaffCadre) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StaffCadre), nil
 }
 
 type StockMovementType string
@@ -2454,6 +2643,54 @@ func (ns NullTransferStatus) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.TransferStatus), nil
+}
+
+type TransportStatus string
+
+const (
+	TransportStatusScheduled       TransportStatus = "scheduled"
+	TransportStatusEnRoutePickup   TransportStatus = "en_route_pickup"
+	TransportStatusPickedUp        TransportStatus = "picked_up"
+	TransportStatusEnRouteHospital TransportStatus = "en_route_hospital"
+	TransportStatusArrived         TransportStatus = "arrived"
+	TransportStatusEnRouteDropoff  TransportStatus = "en_route_dropoff"
+	TransportStatusCompleted       TransportStatus = "completed"
+	TransportStatusCancelled       TransportStatus = "cancelled"
+)
+
+func (e *TransportStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TransportStatus(s)
+	case string:
+		*e = TransportStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TransportStatus: %T", src)
+	}
+	return nil
+}
+
+type NullTransportStatus struct {
+	TransportStatus TransportStatus `json:"transport_status"`
+	Valid           bool            `json:"valid"` // Valid is true if TransportStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTransportStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.TransportStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TransportStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTransportStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TransportStatus), nil
 }
 
 type WaiverStatus string
@@ -3474,6 +3711,28 @@ type LabTestCatalog struct {
 	DeletedAt        pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type LeaveRecord struct {
+	ID              uuid.UUID          `json:"id"`
+	HospitalID      uuid.UUID          `json:"hospital_id"`
+	StaffID         uuid.UUID          `json:"staff_id"`
+	LeaveType       LeaveType          `json:"leave_type"`
+	StartDate       pgtype.Date        `json:"start_date"`
+	EndDate         pgtype.Date        `json:"end_date"`
+	DaysRequested   int32              `json:"days_requested"`
+	DaysApproved    pgtype.Int4        `json:"days_approved"`
+	Reason          pgtype.Text        `json:"reason"`
+	RequestedAt     pgtype.Timestamptz `json:"requested_at"`
+	ApprovedBy      pgtype.UUID        `json:"approved_by"`
+	ApprovedAt      pgtype.Timestamptz `json:"approved_at"`
+	RejectionReason pgtype.Text        `json:"rejection_reason"`
+	Status          LeaveStatus        `json:"status"`
+	ReliefStaffID   pgtype.UUID        `json:"relief_staff_id"`
+	Notes           pgtype.Text        `json:"notes"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type Medication struct {
 	ID                   uuid.UUID          `json:"id"`
 	HospitalID           uuid.UUID          `json:"hospital_id"`
@@ -3654,6 +3913,29 @@ type PatientIdentifier struct {
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt        pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type PatientTransport struct {
+	ID                  uuid.UUID          `json:"id"`
+	HospitalID          uuid.UUID          `json:"hospital_id"`
+	PatientID           uuid.UUID          `json:"patient_id"`
+	SessionID           pgtype.UUID        `json:"session_id"`
+	TransportDate       pgtype.Date        `json:"transport_date"`
+	PickupLocation      string             `json:"pickup_location"`
+	PickupTime          pgtype.Time        `json:"pickup_time"`
+	DropoffLocation     pgtype.Text        `json:"dropoff_location"`
+	DropoffTime         pgtype.Time        `json:"dropoff_time"`
+	VehicleRegistration pgtype.Text        `json:"vehicle_registration"`
+	DriverName          pgtype.Text        `json:"driver_name"`
+	DriverPhone         pgtype.Text        `json:"driver_phone"`
+	DistanceKm          pgtype.Numeric     `json:"distance_km"`
+	Cost                pgtype.Numeric     `json:"cost"`
+	Status              TransportStatus    `json:"status"`
+	ArrangedBy          uuid.UUID          `json:"arranged_by"`
+	Notes               pgtype.Text        `json:"notes"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt           pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type Payment struct {
@@ -3977,6 +4259,119 @@ type SessionVital struct {
 	DeletedAt            pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type ShiftAssignment struct {
+	ID             uuid.UUID          `json:"id"`
+	HospitalID     uuid.UUID          `json:"hospital_id"`
+	StaffID        uuid.UUID          `json:"staff_id"`
+	ShiftDate      pgtype.Date        `json:"shift_date"`
+	ShiftType      ShiftType          `json:"shift_type"`
+	ShiftStartTime pgtype.Time        `json:"shift_start_time"`
+	ShiftEndTime   pgtype.Time        `json:"shift_end_time"`
+	MachineIds     []byte             `json:"machine_ids"`
+	AssignedBy     pgtype.UUID        `json:"assigned_by"`
+	ClockInTime    pgtype.Timestamptz `json:"clock_in_time"`
+	ClockOutTime   pgtype.Timestamptz `json:"clock_out_time"`
+	IsConfirmed    bool               `json:"is_confirmed"`
+	Notes          pgtype.Text        `json:"notes"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt      pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type StaffPerformance struct {
+	ID                       uuid.UUID          `json:"id"`
+	HospitalID               uuid.UUID          `json:"hospital_id"`
+	StaffID                  uuid.UUID          `json:"staff_id"`
+	ReviewPeriodStart        pgtype.Date        `json:"review_period_start"`
+	ReviewPeriodEnd          pgtype.Date        `json:"review_period_end"`
+	ReviewDate               pgtype.Date        `json:"review_date"`
+	AppraisedBy              uuid.UUID          `json:"appraised_by"`
+	OverallScore             pgtype.Numeric     `json:"overall_score"`
+	TechnicalCompetenceScore pgtype.Numeric     `json:"technical_competence_score"`
+	CommunicationScore       pgtype.Numeric     `json:"communication_score"`
+	TeamworkScore            pgtype.Numeric     `json:"teamwork_score"`
+	PunctualityScore         pgtype.Numeric     `json:"punctuality_score"`
+	PatientCareScore         pgtype.Numeric     `json:"patient_care_score"`
+	Strengths                pgtype.Text        `json:"strengths"`
+	AreasForImprovement      pgtype.Text        `json:"areas_for_improvement"`
+	GoalsNextPeriod          pgtype.Text        `json:"goals_next_period"`
+	TrainingRecommendations  pgtype.Text        `json:"training_recommendations"`
+	StaffComments            pgtype.Text        `json:"staff_comments"`
+	PromotionRecommended     bool               `json:"promotion_recommended"`
+	Notes                    pgtype.Text        `json:"notes"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt                pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type StaffProfile struct {
+	ID                    uuid.UUID          `json:"id"`
+	HospitalID            uuid.UUID          `json:"hospital_id"`
+	UserID                uuid.UUID          `json:"user_id"`
+	DepartmentID          pgtype.UUID        `json:"department_id"`
+	Cadre                 StaffCadre         `json:"cadre"`
+	LicenseNumber         pgtype.Text        `json:"license_number"`
+	LicenseExpiryDate     pgtype.Date        `json:"license_expiry_date"`
+	RegistrationBody      pgtype.Text        `json:"registration_body"`
+	Specialization        pgtype.Text        `json:"specialization"`
+	YearsOfExperience     pgtype.Int4        `json:"years_of_experience"`
+	HireDate              pgtype.Date        `json:"hire_date"`
+	ContractEndDate       pgtype.Date        `json:"contract_end_date"`
+	EmployeeNumber        pgtype.Text        `json:"employee_number"`
+	EmergencyContactName  pgtype.Text        `json:"emergency_contact_name"`
+	EmergencyContactPhone pgtype.Text        `json:"emergency_contact_phone"`
+	BloodType             pgtype.Text        `json:"blood_type"`
+	Notes                 pgtype.Text        `json:"notes"`
+	IsActive              bool               `json:"is_active"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt             pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type StaffQualification struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	StaffID           uuid.UUID          `json:"staff_id"`
+	QualificationType string             `json:"qualification_type"`
+	QualificationName string             `json:"qualification_name"`
+	Institution       pgtype.Text        `json:"institution"`
+	Country           pgtype.Text        `json:"country"`
+	YearObtained      pgtype.Int4        `json:"year_obtained"`
+	CertificateNumber pgtype.Text        `json:"certificate_number"`
+	ExpiryDate        pgtype.Date        `json:"expiry_date"`
+	DocumentUrl       pgtype.Text        `json:"document_url"`
+	FileAttachmentID  pgtype.UUID        `json:"file_attachment_id"`
+	IsVerified        bool               `json:"is_verified"`
+	VerifiedBy        pgtype.UUID        `json:"verified_by"`
+	VerifiedAt        pgtype.Timestamptz `json:"verified_at"`
+	Notes             pgtype.Text        `json:"notes"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type StaffSchedule struct {
+	ID             uuid.UUID          `json:"id"`
+	HospitalID     uuid.UUID          `json:"hospital_id"`
+	StaffID        uuid.UUID          `json:"staff_id"`
+	ScheduleName   string             `json:"schedule_name"`
+	ScheduleType   ScheduleType       `json:"schedule_type"`
+	EffectiveFrom  pgtype.Date        `json:"effective_from"`
+	EffectiveUntil pgtype.Date        `json:"effective_until"`
+	MondayShift    pgtype.Text        `json:"monday_shift"`
+	TuesdayShift   pgtype.Text        `json:"tuesday_shift"`
+	WednesdayShift pgtype.Text        `json:"wednesday_shift"`
+	ThursdayShift  pgtype.Text        `json:"thursday_shift"`
+	FridayShift    pgtype.Text        `json:"friday_shift"`
+	SaturdayShift  pgtype.Text        `json:"saturday_shift"`
+	SundayShift    pgtype.Text        `json:"sunday_shift"`
+	Notes          pgtype.Text        `json:"notes"`
+	IsActive       bool               `json:"is_active"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt      pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type StockMovement struct {
 	ID             uuid.UUID          `json:"id"`
 	HospitalID     uuid.UUID          `json:"hospital_id"`
@@ -4034,6 +4429,29 @@ type SyncQueue struct {
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt     pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type TrainingRecord struct {
+	ID                    uuid.UUID          `json:"id"`
+	HospitalID            uuid.UUID          `json:"hospital_id"`
+	StaffID               uuid.UUID          `json:"staff_id"`
+	TrainingName          string             `json:"training_name"`
+	TrainingCategory      pgtype.Text        `json:"training_category"`
+	TrainingProvider      pgtype.Text        `json:"training_provider"`
+	TrainingStartDate     pgtype.Date        `json:"training_start_date"`
+	TrainingEndDate       pgtype.Date        `json:"training_end_date"`
+	DurationHours         pgtype.Numeric     `json:"duration_hours"`
+	CompletedAt           pgtype.Timestamptz `json:"completed_at"`
+	Score                 pgtype.Numeric     `json:"score"`
+	PassStatus            pgtype.Text        `json:"pass_status"`
+	CertificateUrl        pgtype.Text        `json:"certificate_url"`
+	CertificateNumber     pgtype.Text        `json:"certificate_number"`
+	CertificateExpiryDate pgtype.Date        `json:"certificate_expiry_date"`
+	CpdPoints             pgtype.Numeric     `json:"cpd_points"`
+	Notes                 pgtype.Text        `json:"notes"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt             pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type Transfer struct {
