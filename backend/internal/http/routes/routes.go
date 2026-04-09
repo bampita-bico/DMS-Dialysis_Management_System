@@ -20,6 +20,8 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 	labOrdersHandler := handlers.NewLabOrdersHandler(pool)
 	labCatalogHandler := handlers.NewLabCatalogHandler(pool)
 	imagingHandler := handlers.NewImagingHandler(pool)
+	prescriptionHandler := handlers.NewPrescriptionHandler(pool)
+	pharmacyHandler := handlers.NewPharmacyHandler(pool)
 
 	// Protected group
 	auth := r.Group("/api/v1")
@@ -81,5 +83,22 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 		auth.GET("/imaging/orders/:id", imagingHandler.GetOrder)
 		auth.GET("/imaging/orders", imagingHandler.ListOrders)
 		auth.POST("/imaging/orders/:id/report", imagingHandler.AddReport)
+
+		// Prescription endpoints
+		auth.POST("/prescriptions", prescriptionHandler.CreatePrescription)
+		auth.GET("/prescriptions/:id", prescriptionHandler.GetPrescription)
+		auth.GET("/patients/:patient_id/prescriptions", prescriptionHandler.ListPrescriptionsByPatient)
+		auth.POST("/prescriptions/:id/verify", prescriptionHandler.VerifyPrescription)
+		auth.POST("/prescriptions/:id/dispense", prescriptionHandler.DispensePrescription)
+		auth.POST("/prescriptions/:id/cancel", prescriptionHandler.CancelPrescription)
+
+		// Pharmacy endpoints
+		auth.GET("/medications", pharmacyHandler.ListMedications)
+		auth.GET("/medications/search", pharmacyHandler.SearchMedications)
+		auth.GET("/medications/:id", pharmacyHandler.GetMedication)
+		auth.GET("/medications/:medication_id/stock", pharmacyHandler.GetStockLevels)
+		auth.GET("/pharmacy/low-stock", pharmacyHandler.ListLowStock)
+		auth.POST("/pharmacy/check-interaction", pharmacyHandler.CheckDrugInteraction)
+		auth.GET("/medications/:medication_id/interactions", pharmacyHandler.ListDrugInteractions)
 	}
 }
