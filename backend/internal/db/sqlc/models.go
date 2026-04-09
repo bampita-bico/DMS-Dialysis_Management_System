@@ -841,6 +841,51 @@ func (ns NullContactType) Value() (driver.Value, error) {
 	return string(ns.ContactType), nil
 }
 
+type DeathSetting string
+
+const (
+	DeathSettingDuringDialysis DeathSetting = "during_dialysis"
+	DeathSettingHospital       DeathSetting = "hospital"
+	DeathSettingHome           DeathSetting = "home"
+	DeathSettingTransit        DeathSetting = "transit"
+	DeathSettingOther          DeathSetting = "other"
+)
+
+func (e *DeathSetting) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DeathSetting(s)
+	case string:
+		*e = DeathSetting(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DeathSetting: %T", src)
+	}
+	return nil
+}
+
+type NullDeathSetting struct {
+	DeathSetting DeathSetting `json:"death_setting"`
+	Valid        bool         `json:"valid"` // Valid is true if DeathSetting is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDeathSetting) Scan(value interface{}) error {
+	if value == nil {
+		ns.DeathSetting, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DeathSetting.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDeathSetting) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DeathSetting), nil
+}
+
 type DiagnosisType string
 
 const (
@@ -1170,6 +1215,50 @@ func (ns NullFlagType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.FlagType), nil
+}
+
+type HospitalizationOutcome string
+
+const (
+	HospitalizationOutcomeDischarged  HospitalizationOutcome = "discharged"
+	HospitalizationOutcomeTransferred HospitalizationOutcome = "transferred"
+	HospitalizationOutcomeDeceased    HospitalizationOutcome = "deceased"
+	HospitalizationOutcomeAbsconded   HospitalizationOutcome = "absconded"
+)
+
+func (e *HospitalizationOutcome) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = HospitalizationOutcome(s)
+	case string:
+		*e = HospitalizationOutcome(s)
+	default:
+		return fmt.Errorf("unsupported scan type for HospitalizationOutcome: %T", src)
+	}
+	return nil
+}
+
+type NullHospitalizationOutcome struct {
+	HospitalizationOutcome HospitalizationOutcome `json:"hospitalization_outcome"`
+	Valid                  bool                   `json:"valid"` // Valid is true if HospitalizationOutcome is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullHospitalizationOutcome) Scan(value interface{}) error {
+	if value == nil {
+		ns.HospitalizationOutcome, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.HospitalizationOutcome.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullHospitalizationOutcome) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.HospitalizationOutcome), nil
 }
 
 type IDType string
@@ -1778,6 +1867,50 @@ func (ns NullNotificationPriority) Value() (driver.Value, error) {
 	return string(ns.NotificationPriority), nil
 }
 
+type OutcomeTrend string
+
+const (
+	OutcomeTrendImproving OutcomeTrend = "improving"
+	OutcomeTrendStable    OutcomeTrend = "stable"
+	OutcomeTrendDeclining OutcomeTrend = "declining"
+	OutcomeTrendCritical  OutcomeTrend = "critical"
+)
+
+func (e *OutcomeTrend) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OutcomeTrend(s)
+	case string:
+		*e = OutcomeTrend(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OutcomeTrend: %T", src)
+	}
+	return nil
+}
+
+type NullOutcomeTrend struct {
+	OutcomeTrend OutcomeTrend `json:"outcome_trend"`
+	Valid        bool         `json:"valid"` // Valid is true if OutcomeTrend is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOutcomeTrend) Scan(value interface{}) error {
+	if value == nil {
+		ns.OutcomeTrend, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OutcomeTrend.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOutcomeTrend) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OutcomeTrend), nil
+}
+
 type PaymentMethod string
 
 const (
@@ -2043,6 +2176,52 @@ func (ns NullReferralUrgency) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.ReferralUrgency), nil
+}
+
+type ReportType string
+
+const (
+	ReportTypeMonthly    ReportType = "monthly"
+	ReportTypeQuarterly  ReportType = "quarterly"
+	ReportTypeAnnual     ReportType = "annual"
+	ReportTypeDonor      ReportType = "donor"
+	ReportTypeMoh        ReportType = "moh"
+	ReportTypeRegulatory ReportType = "regulatory"
+)
+
+func (e *ReportType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReportType(s)
+	case string:
+		*e = ReportType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReportType: %T", src)
+	}
+	return nil
+}
+
+type NullReportType struct {
+	ReportType ReportType `json:"report_type"`
+	Valid      bool       `json:"valid"` // Valid is true if ReportType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReportType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReportType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReportType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReportType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReportType), nil
 }
 
 type ResultStatus string
@@ -2931,6 +3110,40 @@ type ChwPatientAssignment struct {
 	DeletedAt  pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type ClinicalOutcome struct {
+	ID                    uuid.UUID          `json:"id"`
+	HospitalID            uuid.UUID          `json:"hospital_id"`
+	PatientID             uuid.UUID          `json:"patient_id"`
+	AssessmentDate        pgtype.Date        `json:"assessment_date"`
+	PeriodStart           pgtype.Date        `json:"period_start"`
+	PeriodEnd             pgtype.Date        `json:"period_end"`
+	Hemoglobin            pgtype.Numeric     `json:"hemoglobin"`
+	HemoglobinTargetMin   pgtype.Numeric     `json:"hemoglobin_target_min"`
+	HemoglobinTargetMax   pgtype.Numeric     `json:"hemoglobin_target_max"`
+	KtV                   pgtype.Numeric     `json:"kt_v"`
+	KtVTarget             pgtype.Numeric     `json:"kt_v_target"`
+	Urr                   pgtype.Numeric     `json:"urr"`
+	SystolicBpAvg         pgtype.Numeric     `json:"systolic_bp_avg"`
+	DiastolicBpAvg        pgtype.Numeric     `json:"diastolic_bp_avg"`
+	BpControlled          pgtype.Bool        `json:"bp_controlled"`
+	WeightGainPercent     pgtype.Numeric     `json:"weight_gain_percent"`
+	Albumin               pgtype.Numeric     `json:"albumin"`
+	Phosphate             pgtype.Numeric     `json:"phosphate"`
+	Calcium               pgtype.Numeric     `json:"calcium"`
+	Pth                   pgtype.Numeric     `json:"pth"`
+	QualityOfLifeScore    pgtype.Numeric     `json:"quality_of_life_score"`
+	FunctionalStatus      pgtype.Text        `json:"functional_status"`
+	AdverseEventsCount    int32              `json:"adverse_events_count"`
+	HospitalizationsCount int32              `json:"hospitalizations_count"`
+	MissedSessionsCount   int32              `json:"missed_sessions_count"`
+	OutcomeTrend          NullOutcomeTrend   `json:"outcome_trend"`
+	AssessedBy            pgtype.UUID        `json:"assessed_by"`
+	Notes                 pgtype.Text        `json:"notes"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt             pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type CommunityHealthWorker struct {
 	ID            uuid.UUID          `json:"id"`
 	HospitalID    uuid.UUID          `json:"hospital_id"`
@@ -3187,6 +3400,28 @@ type DialysisSession struct {
 	DeletedAt              pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type DonorReport struct {
+	ID                    uuid.UUID          `json:"id"`
+	HospitalID            uuid.UUID          `json:"hospital_id"`
+	ReportName            string             `json:"report_name"`
+	ReportType            ReportType         `json:"report_type"`
+	PeriodStart           pgtype.Date        `json:"period_start"`
+	PeriodEnd             pgtype.Date        `json:"period_end"`
+	RecipientOrganization string             `json:"recipient_organization"`
+	Data                  []byte             `json:"data"`
+	GeneratedAt           pgtype.Timestamptz `json:"generated_at"`
+	GeneratedBy           uuid.UUID          `json:"generated_by"`
+	SubmittedAt           pgtype.Timestamptz `json:"submitted_at"`
+	SubmittedBy           pgtype.UUID        `json:"submitted_by"`
+	SubmissionReference   pgtype.Text        `json:"submission_reference"`
+	ApprovedBy            pgtype.UUID        `json:"approved_by"`
+	ApprovedAt            pgtype.Timestamptz `json:"approved_at"`
+	Notes                 pgtype.Text        `json:"notes"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt             pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type DrugInteraction struct {
 	ID                       uuid.UUID          `json:"id"`
 	HospitalID               uuid.UUID          `json:"hospital_id"`
@@ -3384,6 +3619,36 @@ type HospitalSetting struct {
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Hospitalization struct {
+	ID                   uuid.UUID                  `json:"id"`
+	HospitalID           uuid.UUID                  `json:"hospital_id"`
+	PatientID            uuid.UUID                  `json:"patient_id"`
+	AdmissionDate        pgtype.Date                `json:"admission_date"`
+	AdmissionTime        pgtype.Time                `json:"admission_time"`
+	DischargeDate        pgtype.Date                `json:"discharge_date"`
+	DischargeTime        pgtype.Time                `json:"discharge_time"`
+	LengthOfStayDays     pgtype.Int4                `json:"length_of_stay_days"`
+	AdmissionReason      string                     `json:"admission_reason"`
+	AdmissionDiagnosis   pgtype.Text                `json:"admission_diagnosis"`
+	Icd10Codes           pgtype.Text                `json:"icd10_codes"`
+	AdmittingFacility    pgtype.Text                `json:"admitting_facility"`
+	WardName             pgtype.Text                `json:"ward_name"`
+	DialysisRelated      bool                       `json:"dialysis_related"`
+	AccessRelated        bool                       `json:"access_related"`
+	InfectionRelated     bool                       `json:"infection_related"`
+	TreatmentGiven       pgtype.Text                `json:"treatment_given"`
+	ProceduresPerformed  pgtype.Text                `json:"procedures_performed"`
+	Outcome              NullHospitalizationOutcome `json:"outcome"`
+	DischargeDestination pgtype.Text                `json:"discharge_destination"`
+	FollowUpRequired     bool                       `json:"follow_up_required"`
+	FollowUpDate         pgtype.Date                `json:"follow_up_date"`
+	RecordedBy           uuid.UUID                  `json:"recorded_by"`
+	Notes                pgtype.Text                `json:"notes"`
+	CreatedAt            pgtype.Timestamptz         `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz         `json:"updated_at"`
+	DeletedAt            pgtype.Timestamptz         `json:"deleted_at"`
 }
 
 type ImagingOrder struct {
@@ -3802,6 +4067,52 @@ type MicrobiologyResult struct {
 	DeletedAt                 pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type MortalityRecord struct {
+	ID                     uuid.UUID          `json:"id"`
+	HospitalID             uuid.UUID          `json:"hospital_id"`
+	PatientID              uuid.UUID          `json:"patient_id"`
+	SessionID              pgtype.UUID        `json:"session_id"`
+	DateOfDeath            pgtype.Date        `json:"date_of_death"`
+	TimeOfDeath            pgtype.Time        `json:"time_of_death"`
+	DeathSetting           DeathSetting       `json:"death_setting"`
+	SessionRelated         bool               `json:"session_related"`
+	PrimaryCauseOfDeath    string             `json:"primary_cause_of_death"`
+	ContributingFactors    pgtype.Text        `json:"contributing_factors"`
+	Icd10Code              pgtype.Text        `json:"icd10_code"`
+	AutopsyPerformed       bool               `json:"autopsy_performed"`
+	AutopsyFindings        pgtype.Text        `json:"autopsy_findings"`
+	ReportedBy             uuid.UUID          `json:"reported_by"`
+	ReportedAt             pgtype.Timestamptz `json:"reported_at"`
+	CertifiedBy            pgtype.UUID        `json:"certified_by"`
+	CertifiedAt            pgtype.Timestamptz `json:"certified_at"`
+	DeathCertificateNumber pgtype.Text        `json:"death_certificate_number"`
+	FamilyNotifiedAt       pgtype.Timestamptz `json:"family_notified_at"`
+	Notes                  pgtype.Text        `json:"notes"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt              pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type NationalRegistrySync struct {
+	ID           uuid.UUID          `json:"id"`
+	HospitalID   uuid.UUID          `json:"hospital_id"`
+	PatientID    uuid.UUID          `json:"patient_id"`
+	RegistryName string             `json:"registry_name"`
+	RegistryID   pgtype.Text        `json:"registry_id"`
+	SyncType     string             `json:"sync_type"`
+	Payload      []byte             `json:"payload"`
+	SyncedAt     pgtype.Timestamptz `json:"synced_at"`
+	SyncedBy     pgtype.UUID        `json:"synced_by"`
+	SyncStatus   string             `json:"sync_status"`
+	ErrorMessage pgtype.Text        `json:"error_message"`
+	RetryCount   int32              `json:"retry_count"`
+	LastRetryAt  pgtype.Timestamptz `json:"last_retry_at"`
+	Notes        pgtype.Text        `json:"notes"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt    pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type NextOfKin struct {
 	ID                 uuid.UUID          `json:"id"`
 	HospitalID         uuid.UUID          `json:"hospital_id"`
@@ -4092,6 +4403,29 @@ type PriceList struct {
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type QualityIndicator struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	IndicatorName     string             `json:"indicator_name"`
+	IndicatorCode     string             `json:"indicator_code"`
+	IndicatorCategory pgtype.Text        `json:"indicator_category"`
+	PeriodStart       pgtype.Date        `json:"period_start"`
+	PeriodEnd         pgtype.Date        `json:"period_end"`
+	Numerator         pgtype.Int4        `json:"numerator"`
+	Denominator       pgtype.Int4        `json:"denominator"`
+	Value             pgtype.Numeric     `json:"value"`
+	Unit              pgtype.Text        `json:"unit"`
+	TargetValue       pgtype.Numeric     `json:"target_value"`
+	BenchmarkValue    pgtype.Numeric     `json:"benchmark_value"`
+	MeetsTarget       pgtype.Bool        `json:"meets_target"`
+	CalculatedAt      pgtype.Timestamptz `json:"calculated_at"`
+	CalculatedBy      pgtype.UUID        `json:"calculated_by"`
+	Notes             pgtype.Text        `json:"notes"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type Referral struct {
