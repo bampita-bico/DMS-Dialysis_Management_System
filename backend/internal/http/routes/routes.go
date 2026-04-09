@@ -22,6 +22,8 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 	imagingHandler := handlers.NewImagingHandler(pool)
 	prescriptionHandler := handlers.NewPrescriptionHandler(pool)
 	pharmacyHandler := handlers.NewPharmacyHandler(pool)
+	equipmentHandler := handlers.NewEquipmentHandler(pool)
+	consumablesHandler := handlers.NewConsumablesHandler(pool)
 
 	// Protected group
 	auth := r.Group("/api/v1")
@@ -100,5 +102,20 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 		auth.GET("/pharmacy/low-stock", pharmacyHandler.ListLowStock)
 		auth.POST("/pharmacy/check-interaction", pharmacyHandler.CheckDrugInteraction)
 		auth.GET("/medications/:medication_id/interactions", pharmacyHandler.ListDrugInteractions)
+
+		// Equipment endpoints
+		auth.POST("/equipment", equipmentHandler.CreateEquipment)
+		auth.GET("/equipment", equipmentHandler.ListEquipment)
+		auth.PATCH("/equipment/:id/status", equipmentHandler.UpdateEquipmentStatus)
+		auth.POST("/equipment/faults", equipmentHandler.ReportFault)
+		auth.GET("/equipment/faults/unresolved", equipmentHandler.ListUnresolvedFaults)
+
+		// Consumables endpoints
+		auth.GET("/consumables", consumablesHandler.ListConsumables)
+		auth.GET("/consumables/:consumable_id/inventory", consumablesHandler.GetInventoryLevels)
+		auth.GET("/consumables/inventory/low-stock", consumablesHandler.ListLowStock)
+		auth.GET("/consumables/inventory/expiring", consumablesHandler.ListExpiringStock)
+		auth.POST("/consumables/usage", consumablesHandler.RecordUsage)
+		auth.GET("/sessions/:session_id/consumables", consumablesHandler.ListSessionUsage)
 	}
 }
