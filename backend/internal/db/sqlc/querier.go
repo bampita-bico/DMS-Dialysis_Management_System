@@ -8,72 +8,126 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
+	AssignCHWToPatient(ctx context.Context, arg AssignCHWToPatientParams) (ChwPatientAssignment, error)
 	AssignUserRole(ctx context.Context, arg AssignUserRoleParams) (UserRole, error)
+	CheckActiveConsent(ctx context.Context, arg CheckActiveConsentParams) (Consent, error)
+	CheckDrugAllergy(ctx context.Context, arg CheckDrugAllergyParams) (Allergy, error)
 	CleanupExpiredSessions(ctx context.Context) error
+	CreateAdmission(ctx context.Context, arg CreateAdmissionParams) (Admission, error)
+	CreateAllergy(ctx context.Context, arg CreateAllergyParams) (Allergy, error)
 	CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) (AuditLog, error)
 	CreateAuthSession(ctx context.Context, arg CreateAuthSessionParams) (AuthSession, error)
+	CreateCHW(ctx context.Context, arg CreateCHWParams) (CommunityHealthWorker, error)
+	CreateComorbidity(ctx context.Context, arg CreateComorbidityParams) (Comorbidity, error)
+	CreateConsent(ctx context.Context, arg CreateConsentParams) (Consent, error)
 	CreateDepartment(ctx context.Context, arg CreateDepartmentParams) (Department, error)
+	CreateDiagnosis(ctx context.Context, arg CreateDiagnosisParams) (Diagnosis, error)
 	CreateFileAttachment(ctx context.Context, arg CreateFileAttachmentParams) (FileAttachment, error)
 	CreateHospital(ctx context.Context, arg CreateHospitalParams) (Hospital, error)
 	CreateHospitalSetting(ctx context.Context, arg CreateHospitalSettingParams) (HospitalSetting, error)
+	CreateNextOfKin(ctx context.Context, arg CreateNextOfKinParams) (NextOfKin, error)
 	CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error)
+	CreatePatient(ctx context.Context, arg CreatePatientParams) (Patient, error)
+	CreatePatientContact(ctx context.Context, arg CreatePatientContactParams) (PatientContact, error)
+	CreatePatientFlag(ctx context.Context, arg CreatePatientFlagParams) (PatientFlag, error)
+	CreatePatientIdentifier(ctx context.Context, arg CreatePatientIdentifierParams) (PatientIdentifier, error)
+	CreateReferral(ctx context.Context, arg CreateReferralParams) (Referral, error)
 	CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error)
 	CreateSyncConflict(ctx context.Context, arg CreateSyncConflictParams) (SyncConflict, error)
+	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteHospitalSetting(ctx context.Context, arg DeleteHospitalSettingParams) error
+	DischargePatient(ctx context.Context, arg DischargePatientParams) (Admission, error)
 	EnqueueSync(ctx context.Context, arg EnqueueSyncParams) (SyncQueue, error)
+	FindByIdentifier(ctx context.Context, arg FindByIdentifierParams) (PatientIdentifier, error)
+	GetActiveAllergies(ctx context.Context, patientID uuid.UUID) ([]Allergy, error)
+	GetActiveFlags(ctx context.Context, patientID uuid.UUID) ([]PatientFlag, error)
 	GetAuditLog(ctx context.Context, id uuid.UUID) (AuditLog, error)
 	GetAuthSession(ctx context.Context, tokenHash string) (AuthSession, error)
+	GetCHWByPatient(ctx context.Context, patientID uuid.UUID) (CommunityHealthWorker, error)
+	GetConsentByType(ctx context.Context, arg GetConsentByTypeParams) (Consent, error)
+	GetCurrentAdmission(ctx context.Context, patientID uuid.UUID) (Admission, error)
 	GetDepartment(ctx context.Context, id uuid.UUID) (Department, error)
 	GetFileAttachment(ctx context.Context, id uuid.UUID) (FileAttachment, error)
 	GetHospital(ctx context.Context, id uuid.UUID) (Hospital, error)
 	GetHospitalSetting(ctx context.Context, arg GetHospitalSettingParams) (HospitalSetting, error)
+	GetInfectiousFlags(ctx context.Context, patientID uuid.UUID) ([]PatientFlag, error)
+	GetLegalGuardian(ctx context.Context, patientID uuid.UUID) (NextOfKin, error)
 	GetNotification(ctx context.Context, id uuid.UUID) (Notification, error)
+	GetPatient(ctx context.Context, id uuid.UUID) (Patient, error)
+	GetPatientByMRN(ctx context.Context, arg GetPatientByMRNParams) (Patient, error)
+	GetPatientByNationalID(ctx context.Context, nationalID pgtype.Text) (Patient, error)
+	GetPatientsByCHW(ctx context.Context, chwID uuid.UUID) ([]Patient, error)
 	GetPendingSyncItems(ctx context.Context, arg GetPendingSyncItemsParams) ([]SyncQueue, error)
+	GetPrimaryContact(ctx context.Context, patientID uuid.UUID) (NextOfKin, error)
+	GetPrimaryDiagnosis(ctx context.Context, patientID uuid.UUID) (Diagnosis, error)
+	GetPrimaryPhone(ctx context.Context, patientID uuid.UUID) (PatientContact, error)
 	GetRole(ctx context.Context, id uuid.UUID) (Role, error)
 	GetSyncConflict(ctx context.Context, id uuid.UUID) (SyncConflict, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, arg GetUserByEmailParams) (User, error)
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]GetUserRolesRow, error)
 	GetUsersInRole(ctx context.Context, roleID uuid.UUID) ([]GetUsersInRoleRow, error)
+	ListActiveAdmissions(ctx context.Context, hospitalID uuid.UUID) ([]Admission, error)
+	ListActivePatients(ctx context.Context, arg ListActivePatientsParams) ([]Patient, error)
 	ListActiveUsers(ctx context.Context, hospitalID uuid.UUID) ([]User, error)
 	ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]AuditLog, error)
 	ListAuditLogsByTable(ctx context.Context, arg ListAuditLogsByTableParams) ([]AuditLog, error)
 	ListAuditLogsByUser(ctx context.Context, arg ListAuditLogsByUserParams) ([]AuditLog, error)
+	ListCHWsByRegion(ctx context.Context, arg ListCHWsByRegionParams) ([]CommunityHealthWorker, error)
+	ListComorbiditiesByPatient(ctx context.Context, patientID uuid.UUID) ([]Comorbidity, error)
+	ListConsentsByPatient(ctx context.Context, patientID uuid.UUID) ([]Consent, error)
+	ListContactsByPatient(ctx context.Context, patientID uuid.UUID) ([]PatientContact, error)
 	ListCriticalUnread(ctx context.Context, userID uuid.UUID) ([]Notification, error)
 	ListDepartments(ctx context.Context, hospitalID uuid.UUID) ([]Department, error)
+	ListDiagnosesByPatient(ctx context.Context, patientID uuid.UUID) ([]Diagnosis, error)
 	ListFileAttachmentsByEntity(ctx context.Context, arg ListFileAttachmentsByEntityParams) ([]FileAttachment, error)
 	ListFileAttachmentsByHospital(ctx context.Context, arg ListFileAttachmentsByHospitalParams) ([]FileAttachment, error)
 	ListHospitalSettings(ctx context.Context, hospitalID uuid.UUID) ([]HospitalSetting, error)
 	ListHospitals(ctx context.Context) ([]Hospital, error)
+	ListIdentifiersByPatient(ctx context.Context, patientID uuid.UUID) ([]PatientIdentifier, error)
+	ListNextOfKinByPatient(ctx context.Context, patientID uuid.UUID) ([]NextOfKin, error)
 	ListPendingConflicts(ctx context.Context, hospitalID uuid.UUID) ([]SyncConflict, error)
+	ListReferralsByPatient(ctx context.Context, patientID uuid.UUID) ([]Referral, error)
 	ListRoles(ctx context.Context, hospitalID uuid.UUID) ([]Role, error)
+	ListTransfersByPatient(ctx context.Context, patientID uuid.UUID) ([]Transfer, error)
 	ListUnreadNotifications(ctx context.Context, userID uuid.UUID) ([]Notification, error)
 	ListUserSessions(ctx context.Context, userID uuid.UUID) ([]AuthSession, error)
 	MarkNotificationActioned(ctx context.Context, id uuid.UUID) error
 	MarkNotificationRead(ctx context.Context, id uuid.UUID) error
+	MarkPatientDeceased(ctx context.Context, id uuid.UUID) error
 	MarkSyncFailed(ctx context.Context, arg MarkSyncFailedParams) error
 	MarkSyncSynced(ctx context.Context, id uuid.UUID) error
 	RequeueFailedSyncs(ctx context.Context) error
 	ResolveConflict(ctx context.Context, arg ResolveConflictParams) error
+	ResolveFlag(ctx context.Context, arg ResolveFlagParams) error
 	RevokeAllUserSessions(ctx context.Context, userID uuid.UUID) error
 	RevokeSession(ctx context.Context, tokenHash string) error
 	RevokeUserRole(ctx context.Context, arg RevokeUserRoleParams) error
+	SearchPatientsByName(ctx context.Context, arg SearchPatientsByNameParams) ([]Patient, error)
 	SoftDeleteDepartment(ctx context.Context, id uuid.UUID) error
 	SoftDeleteFileAttachment(ctx context.Context, id uuid.UUID) error
 	SoftDeleteHospital(ctx context.Context, id uuid.UUID) error
+	SoftDeletePatient(ctx context.Context, id uuid.UUID) error
 	SoftDeleteRole(ctx context.Context, id uuid.UUID) error
 	SoftDeleteUser(ctx context.Context, id uuid.UUID) error
+	UpdateComorbidityStatus(ctx context.Context, arg UpdateComorbidityStatusParams) (Comorbidity, error)
+	UpdateContactPrimary(ctx context.Context, arg UpdateContactPrimaryParams) error
 	UpdateDepartment(ctx context.Context, arg UpdateDepartmentParams) (Department, error)
 	UpdateHospital(ctx context.Context, arg UpdateHospitalParams) (Hospital, error)
 	UpdateHospitalSetting(ctx context.Context, arg UpdateHospitalSettingParams) (HospitalSetting, error)
+	UpdatePatient(ctx context.Context, arg UpdatePatientParams) (Patient, error)
+	UpdateReferralStatus(ctx context.Context, arg UpdateReferralStatusParams) (Referral, error)
 	UpdateRole(ctx context.Context, arg UpdateRoleParams) (Role, error)
+	UpdateTransferStatus(ctx context.Context, arg UpdateTransferStatusParams) (Transfer, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserLastLogin(ctx context.Context, id uuid.UUID) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
+	WithdrawConsent(ctx context.Context, arg WithdrawConsentParams) error
 }
 
 var _ Querier = (*Queries)(nil)

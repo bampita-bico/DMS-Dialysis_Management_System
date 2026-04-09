@@ -13,6 +13,235 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AdmissionType string
+
+const (
+	AdmissionTypeElective  AdmissionType = "elective"
+	AdmissionTypeEmergency AdmissionType = "emergency"
+	AdmissionTypeTransfer  AdmissionType = "transfer"
+)
+
+func (e *AdmissionType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AdmissionType(s)
+	case string:
+		*e = AdmissionType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AdmissionType: %T", src)
+	}
+	return nil
+}
+
+type NullAdmissionType struct {
+	AdmissionType AdmissionType `json:"admission_type"`
+	Valid         bool          `json:"valid"` // Valid is true if AdmissionType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAdmissionType) Scan(value interface{}) error {
+	if value == nil {
+		ns.AdmissionType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AdmissionType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAdmissionType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AdmissionType), nil
+}
+
+type AllergyCategory string
+
+const (
+	AllergyCategoryDrug          AllergyCategory = "drug"
+	AllergyCategoryFood          AllergyCategory = "food"
+	AllergyCategoryContrast      AllergyCategory = "contrast"
+	AllergyCategoryLatex         AllergyCategory = "latex"
+	AllergyCategoryEnvironmental AllergyCategory = "environmental"
+	AllergyCategoryOther         AllergyCategory = "other"
+)
+
+func (e *AllergyCategory) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AllergyCategory(s)
+	case string:
+		*e = AllergyCategory(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AllergyCategory: %T", src)
+	}
+	return nil
+}
+
+type NullAllergyCategory struct {
+	AllergyCategory AllergyCategory `json:"allergy_category"`
+	Valid           bool            `json:"valid"` // Valid is true if AllergyCategory is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAllergyCategory) Scan(value interface{}) error {
+	if value == nil {
+		ns.AllergyCategory, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AllergyCategory.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAllergyCategory) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AllergyCategory), nil
+}
+
+type AllergyReaction string
+
+const (
+	AllergyReactionRash         AllergyReaction = "rash"
+	AllergyReactionUrticaria    AllergyReaction = "urticaria"
+	AllergyReactionAngioedema   AllergyReaction = "angioedema"
+	AllergyReactionAnaphylaxis  AllergyReaction = "anaphylaxis"
+	AllergyReactionBronchospasm AllergyReaction = "bronchospasm"
+	AllergyReactionNausea       AllergyReaction = "nausea"
+	AllergyReactionOther        AllergyReaction = "other"
+)
+
+func (e *AllergyReaction) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AllergyReaction(s)
+	case string:
+		*e = AllergyReaction(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AllergyReaction: %T", src)
+	}
+	return nil
+}
+
+type NullAllergyReaction struct {
+	AllergyReaction AllergyReaction `json:"allergy_reaction"`
+	Valid           bool            `json:"valid"` // Valid is true if AllergyReaction is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAllergyReaction) Scan(value interface{}) error {
+	if value == nil {
+		ns.AllergyReaction, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AllergyReaction.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAllergyReaction) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AllergyReaction), nil
+}
+
+type BloodType string
+
+const (
+	BloodTypeAPos    BloodType = "A+"
+	BloodTypeANeg    BloodType = "A-"
+	BloodTypeBPos    BloodType = "B+"
+	BloodTypeBNeg    BloodType = "B-"
+	BloodTypeABPos   BloodType = "AB+"
+	BloodTypeABNeg   BloodType = "AB-"
+	BloodTypeOPos    BloodType = "O+"
+	BloodTypeONeg    BloodType = "O-"
+	BloodTypeUnknown BloodType = "unknown"
+)
+
+func (e *BloodType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BloodType(s)
+	case string:
+		*e = BloodType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BloodType: %T", src)
+	}
+	return nil
+}
+
+type NullBloodType struct {
+	BloodType BloodType `json:"blood_type"`
+	Valid     bool      `json:"valid"` // Valid is true if BloodType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBloodType) Scan(value interface{}) error {
+	if value == nil {
+		ns.BloodType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BloodType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBloodType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BloodType), nil
+}
+
+type ComorbidityStatus string
+
+const (
+	ComorbidityStatusActive     ComorbidityStatus = "active"
+	ComorbidityStatusControlled ComorbidityStatus = "controlled"
+	ComorbidityStatusResolved   ComorbidityStatus = "resolved"
+	ComorbidityStatusSuspected  ComorbidityStatus = "suspected"
+)
+
+func (e *ComorbidityStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ComorbidityStatus(s)
+	case string:
+		*e = ComorbidityStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ComorbidityStatus: %T", src)
+	}
+	return nil
+}
+
+type NullComorbidityStatus struct {
+	ComorbidityStatus ComorbidityStatus `json:"comorbidity_status"`
+	Valid             bool              `json:"valid"` // Valid is true if ComorbidityStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullComorbidityStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ComorbidityStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ComorbidityStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullComorbidityStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ComorbidityStatus), nil
+}
+
 type ConflictResolution string
 
 const (
@@ -57,6 +286,375 @@ func (ns NullConflictResolution) Value() (driver.Value, error) {
 	return string(ns.ConflictResolution), nil
 }
 
+type ConsentStatus string
+
+const (
+	ConsentStatusGiven     ConsentStatus = "given"
+	ConsentStatusRefused   ConsentStatus = "refused"
+	ConsentStatusWithdrawn ConsentStatus = "withdrawn"
+	ConsentStatusExpired   ConsentStatus = "expired"
+)
+
+func (e *ConsentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ConsentStatus(s)
+	case string:
+		*e = ConsentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ConsentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullConsentStatus struct {
+	ConsentStatus ConsentStatus `json:"consent_status"`
+	Valid         bool          `json:"valid"` // Valid is true if ConsentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullConsentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ConsentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ConsentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullConsentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ConsentStatus), nil
+}
+
+type ConsentType string
+
+const (
+	ConsentTypeDialysisTreatment       ConsentType = "dialysis_treatment"
+	ConsentTypeVascularAccessProcedure ConsentType = "vascular_access_procedure"
+	ConsentTypeBloodTransfusion        ConsentType = "blood_transfusion"
+	ConsentTypeSurgery                 ConsentType = "surgery"
+	ConsentTypeHivTesting              ConsentType = "hiv_testing"
+	ConsentTypeDataSharing             ConsentType = "data_sharing"
+	ConsentTypeResearch                ConsentType = "research"
+	ConsentTypePhotography             ConsentType = "photography"
+	ConsentTypeGeneralTreatment        ConsentType = "general_treatment"
+)
+
+func (e *ConsentType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ConsentType(s)
+	case string:
+		*e = ConsentType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ConsentType: %T", src)
+	}
+	return nil
+}
+
+type NullConsentType struct {
+	ConsentType ConsentType `json:"consent_type"`
+	Valid       bool        `json:"valid"` // Valid is true if ConsentType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullConsentType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ConsentType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ConsentType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullConsentType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ConsentType), nil
+}
+
+type ContactType string
+
+const (
+	ContactTypePhone    ContactType = "phone"
+	ContactTypeEmail    ContactType = "email"
+	ContactTypeAddress  ContactType = "address"
+	ContactTypeWhatsapp ContactType = "whatsapp"
+)
+
+func (e *ContactType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ContactType(s)
+	case string:
+		*e = ContactType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ContactType: %T", src)
+	}
+	return nil
+}
+
+type NullContactType struct {
+	ContactType ContactType `json:"contact_type"`
+	Valid       bool        `json:"valid"` // Valid is true if ContactType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullContactType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ContactType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ContactType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullContactType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ContactType), nil
+}
+
+type DiagnosisType string
+
+const (
+	DiagnosisTypePrimary      DiagnosisType = "primary"
+	DiagnosisTypeSecondary    DiagnosisType = "secondary"
+	DiagnosisTypeDifferential DiagnosisType = "differential"
+	DiagnosisTypeWorking      DiagnosisType = "working"
+	DiagnosisTypeConfirmed    DiagnosisType = "confirmed"
+	DiagnosisTypeRuledOut     DiagnosisType = "ruled_out"
+)
+
+func (e *DiagnosisType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DiagnosisType(s)
+	case string:
+		*e = DiagnosisType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DiagnosisType: %T", src)
+	}
+	return nil
+}
+
+type NullDiagnosisType struct {
+	DiagnosisType DiagnosisType `json:"diagnosis_type"`
+	Valid         bool          `json:"valid"` // Valid is true if DiagnosisType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDiagnosisType) Scan(value interface{}) error {
+	if value == nil {
+		ns.DiagnosisType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DiagnosisType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDiagnosisType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DiagnosisType), nil
+}
+
+type DischargeType string
+
+const (
+	DischargeTypeRecovered     DischargeType = "recovered"
+	DischargeTypeReferred      DischargeType = "referred"
+	DischargeTypeAbsconded     DischargeType = "absconded"
+	DischargeTypeDeceased      DischargeType = "deceased"
+	DischargeTypeAgainstAdvice DischargeType = "against_advice"
+)
+
+func (e *DischargeType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DischargeType(s)
+	case string:
+		*e = DischargeType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DischargeType: %T", src)
+	}
+	return nil
+}
+
+type NullDischargeType struct {
+	DischargeType DischargeType `json:"discharge_type"`
+	Valid         bool          `json:"valid"` // Valid is true if DischargeType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDischargeType) Scan(value interface{}) error {
+	if value == nil {
+		ns.DischargeType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DischargeType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDischargeType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DischargeType), nil
+}
+
+type FlagType string
+
+const (
+	FlagTypeHighRisk     FlagType = "high_risk"
+	FlagTypeInfectious   FlagType = "infectious"
+	FlagTypeHivPositive  FlagType = "hiv_positive"
+	FlagTypeHepatitisB   FlagType = "hepatitis_b"
+	FlagTypeHepatitisC   FlagType = "hepatitis_c"
+	FlagTypeNonCompliant FlagType = "non_compliant"
+	FlagTypeVip          FlagType = "vip"
+	FlagTypeDeceased     FlagType = "deceased"
+	FlagTypeAllergyAlert FlagType = "allergy_alert"
+)
+
+func (e *FlagType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FlagType(s)
+	case string:
+		*e = FlagType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FlagType: %T", src)
+	}
+	return nil
+}
+
+type NullFlagType struct {
+	FlagType FlagType `json:"flag_type"`
+	Valid    bool     `json:"valid"` // Valid is true if FlagType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFlagType) Scan(value interface{}) error {
+	if value == nil {
+		ns.FlagType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FlagType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFlagType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FlagType), nil
+}
+
+type IDType string
+
+const (
+	IDTypeNationalID  IDType = "national_id"
+	IDTypePassport    IDType = "passport"
+	IDTypeNhif        IDType = "nhif"
+	IDTypeNhis        IDType = "nhis"
+	IDTypeRefugeeID   IDType = "refugee_id"
+	IDTypeHospitalMrn IDType = "hospital_mrn"
+	IDTypeOther       IDType = "other"
+)
+
+func (e *IDType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = IDType(s)
+	case string:
+		*e = IDType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for IDType: %T", src)
+	}
+	return nil
+}
+
+type NullIDType struct {
+	IDType IDType `json:"id_type"`
+	Valid  bool   `json:"valid"` // Valid is true if IDType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullIDType) Scan(value interface{}) error {
+	if value == nil {
+		ns.IDType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.IDType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullIDType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.IDType), nil
+}
+
+type MaritalStatus string
+
+const (
+	MaritalStatusSingle   MaritalStatus = "single"
+	MaritalStatusMarried  MaritalStatus = "married"
+	MaritalStatusDivorced MaritalStatus = "divorced"
+	MaritalStatusWidowed  MaritalStatus = "widowed"
+	MaritalStatusUnknown  MaritalStatus = "unknown"
+)
+
+func (e *MaritalStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MaritalStatus(s)
+	case string:
+		*e = MaritalStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MaritalStatus: %T", src)
+	}
+	return nil
+}
+
+type NullMaritalStatus struct {
+	MaritalStatus MaritalStatus `json:"marital_status"`
+	Valid         bool          `json:"valid"` // Valid is true if MaritalStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMaritalStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.MaritalStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MaritalStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMaritalStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MaritalStatus), nil
+}
+
 type NotificationPriority string
 
 const (
@@ -99,6 +697,224 @@ func (ns NullNotificationPriority) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.NotificationPriority), nil
+}
+
+type ReferralDirection string
+
+const (
+	ReferralDirectionInbound  ReferralDirection = "inbound"
+	ReferralDirectionOutbound ReferralDirection = "outbound"
+)
+
+func (e *ReferralDirection) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReferralDirection(s)
+	case string:
+		*e = ReferralDirection(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReferralDirection: %T", src)
+	}
+	return nil
+}
+
+type NullReferralDirection struct {
+	ReferralDirection ReferralDirection `json:"referral_direction"`
+	Valid             bool              `json:"valid"` // Valid is true if ReferralDirection is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReferralDirection) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReferralDirection, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReferralDirection.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReferralDirection) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReferralDirection), nil
+}
+
+type ReferralStatus string
+
+const (
+	ReferralStatusPending   ReferralStatus = "pending"
+	ReferralStatusAccepted  ReferralStatus = "accepted"
+	ReferralStatusRejected  ReferralStatus = "rejected"
+	ReferralStatusCompleted ReferralStatus = "completed"
+	ReferralStatusCancelled ReferralStatus = "cancelled"
+)
+
+func (e *ReferralStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReferralStatus(s)
+	case string:
+		*e = ReferralStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReferralStatus: %T", src)
+	}
+	return nil
+}
+
+type NullReferralStatus struct {
+	ReferralStatus ReferralStatus `json:"referral_status"`
+	Valid          bool           `json:"valid"` // Valid is true if ReferralStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReferralStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReferralStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReferralStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReferralStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReferralStatus), nil
+}
+
+type ReferralUrgency string
+
+const (
+	ReferralUrgencyRoutine   ReferralUrgency = "routine"
+	ReferralUrgencyUrgent    ReferralUrgency = "urgent"
+	ReferralUrgencyEmergency ReferralUrgency = "emergency"
+)
+
+func (e *ReferralUrgency) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReferralUrgency(s)
+	case string:
+		*e = ReferralUrgency(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReferralUrgency: %T", src)
+	}
+	return nil
+}
+
+type NullReferralUrgency struct {
+	ReferralUrgency ReferralUrgency `json:"referral_urgency"`
+	Valid           bool            `json:"valid"` // Valid is true if ReferralUrgency is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReferralUrgency) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReferralUrgency, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReferralUrgency.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReferralUrgency) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReferralUrgency), nil
+}
+
+type SeverityLevel string
+
+const (
+	SeverityLevelMild            SeverityLevel = "mild"
+	SeverityLevelModerate        SeverityLevel = "moderate"
+	SeverityLevelSevere          SeverityLevel = "severe"
+	SeverityLevelLifeThreatening SeverityLevel = "life_threatening"
+)
+
+func (e *SeverityLevel) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SeverityLevel(s)
+	case string:
+		*e = SeverityLevel(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SeverityLevel: %T", src)
+	}
+	return nil
+}
+
+type NullSeverityLevel struct {
+	SeverityLevel SeverityLevel `json:"severity_level"`
+	Valid         bool          `json:"valid"` // Valid is true if SeverityLevel is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSeverityLevel) Scan(value interface{}) error {
+	if value == nil {
+		ns.SeverityLevel, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SeverityLevel.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSeverityLevel) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SeverityLevel), nil
+}
+
+type SexType string
+
+const (
+	SexTypeMale     SexType = "male"
+	SexTypeFemale   SexType = "female"
+	SexTypeIntersex SexType = "intersex"
+	SexTypeUnknown  SexType = "unknown"
+)
+
+func (e *SexType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SexType(s)
+	case string:
+		*e = SexType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SexType: %T", src)
+	}
+	return nil
+}
+
+type NullSexType struct {
+	SexType SexType `json:"sex_type"`
+	Valid   bool    `json:"valid"` // Valid is true if SexType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSexType) Scan(value interface{}) error {
+	if value == nil {
+		ns.SexType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SexType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSexType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SexType), nil
 }
 
 type SyncOperation string
@@ -189,6 +1005,135 @@ func (ns NullSyncStatus) Value() (driver.Value, error) {
 	return string(ns.SyncStatus), nil
 }
 
+type TransferReason string
+
+const (
+	TransferReasonHigherLevelCare       TransferReason = "higher_level_care"
+	TransferReasonSpecialistReferral    TransferReason = "specialist_referral"
+	TransferReasonPatientRequest        TransferReason = "patient_request"
+	TransferReasonBedAvailability       TransferReason = "bed_availability"
+	TransferReasonGeographicConvenience TransferReason = "geographic_convenience"
+	TransferReasonTransplantWorkup      TransferReason = "transplant_workup"
+	TransferReasonOther                 TransferReason = "other"
+)
+
+func (e *TransferReason) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TransferReason(s)
+	case string:
+		*e = TransferReason(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TransferReason: %T", src)
+	}
+	return nil
+}
+
+type NullTransferReason struct {
+	TransferReason TransferReason `json:"transfer_reason"`
+	Valid          bool           `json:"valid"` // Valid is true if TransferReason is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTransferReason) Scan(value interface{}) error {
+	if value == nil {
+		ns.TransferReason, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TransferReason.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTransferReason) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TransferReason), nil
+}
+
+type TransferStatus string
+
+const (
+	TransferStatusRequested TransferStatus = "requested"
+	TransferStatusApproved  TransferStatus = "approved"
+	TransferStatusInTransit TransferStatus = "in_transit"
+	TransferStatusCompleted TransferStatus = "completed"
+	TransferStatusCancelled TransferStatus = "cancelled"
+)
+
+func (e *TransferStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TransferStatus(s)
+	case string:
+		*e = TransferStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TransferStatus: %T", src)
+	}
+	return nil
+}
+
+type NullTransferStatus struct {
+	TransferStatus TransferStatus `json:"transfer_status"`
+	Valid          bool           `json:"valid"` // Valid is true if TransferStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTransferStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.TransferStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TransferStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTransferStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TransferStatus), nil
+}
+
+type Admission struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	PatientID         uuid.UUID          `json:"patient_id"`
+	AdmissionType     AdmissionType      `json:"admission_type"`
+	AdmittedAt        pgtype.Timestamptz `json:"admitted_at"`
+	AdmittedBy        uuid.UUID          `json:"admitted_by"`
+	Ward              pgtype.Text        `json:"ward"`
+	BedNumber         pgtype.Text        `json:"bed_number"`
+	PrimaryDiagnosis  pgtype.Text        `json:"primary_diagnosis"`
+	AdmittingDoctorID pgtype.UUID        `json:"admitting_doctor_id"`
+	DischargedAt      pgtype.Timestamptz `json:"discharged_at"`
+	DischargeType     NullDischargeType  `json:"discharge_type"`
+	DischargeSummary  pgtype.Text        `json:"discharge_summary"`
+	DischargedBy      pgtype.UUID        `json:"discharged_by"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Allergy struct {
+	ID         uuid.UUID          `json:"id"`
+	HospitalID uuid.UUID          `json:"hospital_id"`
+	PatientID  uuid.UUID          `json:"patient_id"`
+	Allergen   string             `json:"allergen"`
+	Category   AllergyCategory    `json:"category"`
+	Reaction   AllergyReaction    `json:"reaction"`
+	Severity   SeverityLevel      `json:"severity"`
+	OnsetDate  pgtype.Date        `json:"onset_date"`
+	Notes      pgtype.Text        `json:"notes"`
+	RecordedBy uuid.UUID          `json:"recorded_by"`
+	IsActive   bool               `json:"is_active"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt  pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type AuditLog struct {
 	ID         uuid.UUID          `json:"id"`
 	HospitalID uuid.UUID          `json:"hospital_id"`
@@ -217,6 +1162,73 @@ type AuthSession struct {
 	DeletedAt  pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type ChwPatientAssignment struct {
+	ID         uuid.UUID          `json:"id"`
+	HospitalID uuid.UUID          `json:"hospital_id"`
+	ChwID      uuid.UUID          `json:"chw_id"`
+	PatientID  uuid.UUID          `json:"patient_id"`
+	AssignedAt pgtype.Timestamptz `json:"assigned_at"`
+	Notes      pgtype.Text        `json:"notes"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt  pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type CommunityHealthWorker struct {
+	ID            uuid.UUID          `json:"id"`
+	HospitalID    uuid.UUID          `json:"hospital_id"`
+	FullName      string             `json:"full_name"`
+	Phone         string             `json:"phone"`
+	AltPhone      pgtype.Text        `json:"alt_phone"`
+	Region        string             `json:"region"`
+	District      string             `json:"district"`
+	Village       pgtype.Text        `json:"village"`
+	CatchmentArea pgtype.Text        `json:"catchment_area"`
+	ChwIDNumber   pgtype.Text        `json:"chw_id_number"`
+	IsActive      bool               `json:"is_active"`
+	RegisteredBy  uuid.UUID          `json:"registered_by"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt     pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Comorbidity struct {
+	ID          uuid.UUID          `json:"id"`
+	HospitalID  uuid.UUID          `json:"hospital_id"`
+	PatientID   uuid.UUID          `json:"patient_id"`
+	Condition   string             `json:"condition"`
+	Icd10Code   pgtype.Text        `json:"icd10_code"`
+	Status      ComorbidityStatus  `json:"status"`
+	DiagnosedAt pgtype.Date        `json:"diagnosed_at"`
+	DiagnosedBy pgtype.UUID        `json:"diagnosed_by"`
+	ResolvedAt  pgtype.Date        `json:"resolved_at"`
+	Notes       pgtype.Text        `json:"notes"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Consent struct {
+	ID              uuid.UUID          `json:"id"`
+	HospitalID      uuid.UUID          `json:"hospital_id"`
+	PatientID       uuid.UUID          `json:"patient_id"`
+	ConsentType     ConsentType        `json:"consent_type"`
+	Status          ConsentStatus      `json:"status"`
+	GivenBy         string             `json:"given_by"`
+	Relationship    pgtype.Text        `json:"relationship"`
+	WitnessID       pgtype.UUID        `json:"witness_id"`
+	SignedAt        pgtype.Timestamptz `json:"signed_at"`
+	ExpiresAt       pgtype.Timestamptz `json:"expires_at"`
+	WithdrawnAt     pgtype.Timestamptz `json:"withdrawn_at"`
+	WithdrawnReason pgtype.Text        `json:"withdrawn_reason"`
+	DocumentUrl     pgtype.Text        `json:"document_url"`
+	Notes           pgtype.Text        `json:"notes"`
+	RecordedBy      uuid.UUID          `json:"recorded_by"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type Department struct {
 	ID          uuid.UUID          `json:"id"`
 	HospitalID  uuid.UUID          `json:"hospital_id"`
@@ -228,6 +1240,22 @@ type Department struct {
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Diagnosis struct {
+	ID            uuid.UUID          `json:"id"`
+	HospitalID    uuid.UUID          `json:"hospital_id"`
+	PatientID     uuid.UUID          `json:"patient_id"`
+	Icd10Code     string             `json:"icd10_code"`
+	Description   string             `json:"description"`
+	DiagnosisType DiagnosisType      `json:"diagnosis_type"`
+	DiagnosedBy   uuid.UUID          `json:"diagnosed_by"`
+	DiagnosedAt   pgtype.Timestamptz `json:"diagnosed_at"`
+	AdmissionID   pgtype.UUID        `json:"admission_id"`
+	Notes         pgtype.Text        `json:"notes"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt     pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type FileAttachment struct {
@@ -278,6 +1306,24 @@ type HospitalSetting struct {
 	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type NextOfKin struct {
+	ID                 uuid.UUID          `json:"id"`
+	HospitalID         uuid.UUID          `json:"hospital_id"`
+	PatientID          uuid.UUID          `json:"patient_id"`
+	FullName           string             `json:"full_name"`
+	Relationship       string             `json:"relationship"`
+	PhonePrimary       string             `json:"phone_primary"`
+	PhoneSecondary     pgtype.Text        `json:"phone_secondary"`
+	Address            pgtype.Text        `json:"address"`
+	NationalID         pgtype.Text        `json:"national_id"`
+	IsLegalGuardian    bool               `json:"is_legal_guardian"`
+	IsEmergencyContact bool               `json:"is_emergency_contact"`
+	PriorityOrder      int32              `json:"priority_order"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt          pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type Notification struct {
 	ID         uuid.UUID            `json:"id"`
 	HospitalID uuid.UUID            `json:"hospital_id"`
@@ -294,6 +1340,105 @@ type Notification struct {
 	CreatedAt  pgtype.Timestamptz   `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz   `json:"updated_at"`
 	DeletedAt  pgtype.Timestamptz   `json:"deleted_at"`
+}
+
+type Patient struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	Mrn               string             `json:"mrn"`
+	NationalID        pgtype.Text        `json:"national_id"`
+	FullName          string             `json:"full_name"`
+	PreferredName     pgtype.Text        `json:"preferred_name"`
+	DateOfBirth       pgtype.Date        `json:"date_of_birth"`
+	Sex               SexType            `json:"sex"`
+	BloodType         BloodType          `json:"blood_type"`
+	MaritalStatus     NullMaritalStatus  `json:"marital_status"`
+	Nationality       pgtype.Text        `json:"nationality"`
+	Religion          pgtype.Text        `json:"religion"`
+	Occupation        pgtype.Text        `json:"occupation"`
+	EducationLevel    pgtype.Text        `json:"education_level"`
+	PhotoUrl          pgtype.Text        `json:"photo_url"`
+	PrimaryLanguage   pgtype.Text        `json:"primary_language"`
+	InterpreterNeeded bool               `json:"interpreter_needed"`
+	RegistrationDate  pgtype.Date        `json:"registration_date"`
+	RegisteredBy      uuid.UUID          `json:"registered_by"`
+	PrimaryDoctorID   pgtype.UUID        `json:"primary_doctor_id"`
+	IsActive          bool               `json:"is_active"`
+	DeceasedAt        pgtype.Timestamptz `json:"deceased_at"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type PatientContact struct {
+	ID          uuid.UUID          `json:"id"`
+	HospitalID  uuid.UUID          `json:"hospital_id"`
+	PatientID   uuid.UUID          `json:"patient_id"`
+	ContactType ContactType        `json:"contact_type"`
+	Value       string             `json:"value"`
+	Label       pgtype.Text        `json:"label"`
+	IsPrimary   bool               `json:"is_primary"`
+	IsVerified  bool               `json:"is_verified"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt   pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type PatientFlag struct {
+	ID         uuid.UUID          `json:"id"`
+	HospitalID uuid.UUID          `json:"hospital_id"`
+	PatientID  uuid.UUID          `json:"patient_id"`
+	FlagType   FlagType           `json:"flag_type"`
+	Reason     string             `json:"reason"`
+	FlaggedBy  uuid.UUID          `json:"flagged_by"`
+	FlaggedAt  pgtype.Timestamptz `json:"flagged_at"`
+	ExpiresAt  pgtype.Timestamptz `json:"expires_at"`
+	ResolvedBy pgtype.UUID        `json:"resolved_by"`
+	ResolvedAt pgtype.Timestamptz `json:"resolved_at"`
+	IsActive   bool               `json:"is_active"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt  pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type PatientIdentifier struct {
+	ID               uuid.UUID          `json:"id"`
+	HospitalID       uuid.UUID          `json:"hospital_id"`
+	PatientID        uuid.UUID          `json:"patient_id"`
+	IDType           IDType             `json:"id_type"`
+	IDValue          string             `json:"id_value"`
+	IssuingCountry   pgtype.Text        `json:"issuing_country"`
+	IssuingAuthority pgtype.Text        `json:"issuing_authority"`
+	IssuedDate       pgtype.Date        `json:"issued_date"`
+	ExpiryDate       pgtype.Date        `json:"expiry_date"`
+	IsVerified       bool               `json:"is_verified"`
+	VerifiedBy       pgtype.UUID        `json:"verified_by"`
+	VerifiedAt       pgtype.Timestamptz `json:"verified_at"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt        pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Referral struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	PatientID         uuid.UUID          `json:"patient_id"`
+	Direction         ReferralDirection  `json:"direction"`
+	FromFacility      pgtype.Text        `json:"from_facility"`
+	ToFacility        pgtype.Text        `json:"to_facility"`
+	FromDoctor        pgtype.Text        `json:"from_doctor"`
+	ToDoctorID        pgtype.UUID        `json:"to_doctor_id"`
+	Reason            string             `json:"reason"`
+	Urgency           ReferralUrgency    `json:"urgency"`
+	Status            ReferralStatus     `json:"status"`
+	ReferralDate      pgtype.Date        `json:"referral_date"`
+	ResponseDate      pgtype.Date        `json:"response_date"`
+	ResponseNotes     pgtype.Text        `json:"response_notes"`
+	ReferralLetterUrl pgtype.Text        `json:"referral_letter_url"`
+	CreatedBy         uuid.UUID          `json:"created_by"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type Role struct {
@@ -342,6 +1487,29 @@ type SyncQueue struct {
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt     pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Transfer struct {
+	ID             uuid.UUID          `json:"id"`
+	HospitalID     uuid.UUID          `json:"hospital_id"`
+	PatientID      uuid.UUID          `json:"patient_id"`
+	FromHospitalID pgtype.UUID        `json:"from_hospital_id"`
+	ToHospitalID   pgtype.UUID        `json:"to_hospital_id"`
+	FromDepartment pgtype.Text        `json:"from_department"`
+	ToDepartment   pgtype.Text        `json:"to_department"`
+	Reason         TransferReason     `json:"reason"`
+	ReasonNotes    pgtype.Text        `json:"reason_notes"`
+	Status         TransferStatus     `json:"status"`
+	RequestedBy    uuid.UUID          `json:"requested_by"`
+	RequestedAt    pgtype.Timestamptz `json:"requested_at"`
+	ApprovedBy     pgtype.UUID        `json:"approved_by"`
+	ApprovedAt     pgtype.Timestamptz `json:"approved_at"`
+	TransferredAt  pgtype.Timestamptz `json:"transferred_at"`
+	ReceivedBy     pgtype.Text        `json:"received_by"`
+	TransferNotes  pgtype.Text        `json:"transfer_notes"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt      pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type User struct {

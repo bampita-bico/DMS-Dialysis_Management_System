@@ -1,0 +1,10 @@
+# github.com/dmsafrica/dms/cmd/api
+internal\security\jwt.go:1:1: expected 'package', found 'EOF'
+# github.com/dmsafrica/dms/internal/http/middleware
+internal\security\jwt.go:1:1: expected 'package', found 'EOF'
+# github.com/dmsafrica/dms/internal/http/routes
+internal\security\jwt.go:1:1: expected 'package', found 'EOF'
+# github.com/dmsafrica/dms/internal/http/server
+internal\security\jwt.go:1:1: expected 'package', found 'EOF'
+# github.com/dmsafrica/dms/internal/security
+internal\security\jwt.go:1:1: expected 'package', found 'EOF'

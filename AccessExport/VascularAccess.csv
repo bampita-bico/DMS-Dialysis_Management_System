@@ -1,0 +1,19 @@
+"AccessID","PatientID","AccessType","AntisepticUsed","InsertionSite","Depth_CXR","Approaches","NoOfPricks","DateCreated","Complications","OutCome","OperatedBy","CurrentStatus"
+15,1,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine",,,,,,1,,,
+20,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"High-Jugular",2,,0,"Success",,
+21,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"High-Jugular",,18-Dec-2025 0:00:00,0,"Success",,
+22,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"High-Jugular",,,0,"Success","Mujjabi Steve Bico","ACTIVE"
+23,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,17-Feb-2026 0:00:00,0,"Success","Okileng Emmanuel","ACTIVE"
+24,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,24-Mar-2026 0:00:00,0,"Success","Okileng Emmanuel","ACTIVE"
+25,0,,"Alcohol-Based Solutions;Povidine-Iodine","Right Subclavian",,"Infraclavicular",,16-Dec-2025 0:00:00,0,"Success","Barungi Pius","PERMCATH, ACTIVE"
+26,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,27-Mar-2026 0:00:00,0,"Success",,
+27,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,26-Dec-2025 0:00:00,0,"Success","Barungi Pius","ACTIVE"
+28,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,26-Dec-2025 0:00:00,0,"Success","Barungi Pius","ACTIVE"
+29,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,24-Mar-2026 0:00:00,0,"Success","Okileng Emmanuel","ACTIVE"
+30,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,05-Mar-2026 0:00:00,0,"Success","Okileng Emmanuel","ACTIVE"
+31,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,16-Dec-2025 0:00:00,0,"Success","Okileng Emmanuel","ACTIVE"
+32,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,,0,"Success","Barungi Pius","ACTIVE"
+33,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,27-Dec-2025 0:00:00,0,"Success","Ssali Nicholas","ACTIVE"
+34,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,12-Mar-2026 0:00:00,0,,,"ACTIVE"
+35,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,,,03-Mar-2026 0:00:00,0,"Success","Ssali Nicholas","ACTIVE"
+36,0,"CVC - Jugular (Tunneled/Permcath)","Alcohol-Based Solutions;Povidine-Iodine","Right Internal Jugular",,"Low-Jugular",,25-Feb-2026 0:00:00,0,"Success","Okileng Emmanuel","ACTIVE"

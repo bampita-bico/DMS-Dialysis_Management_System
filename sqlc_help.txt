@@ -1,0 +1,3 @@
+go: downloading golang.org/x/sys v0.28.0
+go: downloading modernc.org/memory v1.8.0
+go: writing stat cache: rename C:\Users\pc\go\pkg\mod\cache\download\modernc.org\libc\@v\v1.55.3.info557281466.tmp C:\Users\pc\go\pkg\mod\cache\download\modernc.org\libc\@v\v1.55.3.info: Access is denied.
