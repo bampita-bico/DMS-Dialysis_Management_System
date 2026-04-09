@@ -155,6 +155,50 @@ func (ns NullAccessType) Value() (driver.Value, error) {
 	return string(ns.AccessType), nil
 }
 
+type AccountStatus string
+
+const (
+	AccountStatusActive    AccountStatus = "active"
+	AccountStatusSuspended AccountStatus = "suspended"
+	AccountStatusClosed    AccountStatus = "closed"
+	AccountStatusDefaulted AccountStatus = "defaulted"
+)
+
+func (e *AccountStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AccountStatus(s)
+	case string:
+		*e = AccountStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AccountStatus: %T", src)
+	}
+	return nil
+}
+
+type NullAccountStatus struct {
+	AccountStatus AccountStatus `json:"account_status"`
+	Valid         bool          `json:"valid"` // Valid is true if AccountStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAccountStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.AccountStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AccountStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAccountStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AccountStatus), nil
+}
+
 type AdmissionType string
 
 const (
@@ -428,6 +472,53 @@ func (ns NullCertificationType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.CertificationType), nil
+}
+
+type ClaimStatus string
+
+const (
+	ClaimStatusDraft             ClaimStatus = "draft"
+	ClaimStatusSubmitted         ClaimStatus = "submitted"
+	ClaimStatusUnderReview       ClaimStatus = "under_review"
+	ClaimStatusApproved          ClaimStatus = "approved"
+	ClaimStatusPartiallyApproved ClaimStatus = "partially_approved"
+	ClaimStatusRejected          ClaimStatus = "rejected"
+	ClaimStatusPaid              ClaimStatus = "paid"
+)
+
+func (e *ClaimStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ClaimStatus(s)
+	case string:
+		*e = ClaimStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ClaimStatus: %T", src)
+	}
+	return nil
+}
+
+type NullClaimStatus struct {
+	ClaimStatus ClaimStatus `json:"claim_status"`
+	Valid       bool        `json:"valid"` // Valid is true if ClaimStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullClaimStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ClaimStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ClaimStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullClaimStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ClaimStatus), nil
 }
 
 type ComorbidityStatus string
@@ -1175,6 +1266,53 @@ func (ns NullImagingModality) Value() (driver.Value, error) {
 	return string(ns.ImagingModality), nil
 }
 
+type InvoiceStatus string
+
+const (
+	InvoiceStatusDraft         InvoiceStatus = "draft"
+	InvoiceStatusIssued        InvoiceStatus = "issued"
+	InvoiceStatusPartiallyPaid InvoiceStatus = "partially_paid"
+	InvoiceStatusPaid          InvoiceStatus = "paid"
+	InvoiceStatusOverdue       InvoiceStatus = "overdue"
+	InvoiceStatusCancelled     InvoiceStatus = "cancelled"
+	InvoiceStatusWrittenOff    InvoiceStatus = "written_off"
+)
+
+func (e *InvoiceStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = InvoiceStatus(s)
+	case string:
+		*e = InvoiceStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for InvoiceStatus: %T", src)
+	}
+	return nil
+}
+
+type NullInvoiceStatus struct {
+	InvoiceStatus InvoiceStatus `json:"invoice_status"`
+	Valid         bool          `json:"valid"` // Valid is true if InvoiceStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullInvoiceStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.InvoiceStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.InvoiceStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullInvoiceStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.InvoiceStatus), nil
+}
+
 type LabPriority string
 
 const (
@@ -1547,6 +1685,98 @@ func (ns NullNotificationPriority) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.NotificationPriority), nil
+}
+
+type PaymentMethod string
+
+const (
+	PaymentMethodCash         PaymentMethod = "cash"
+	PaymentMethodMobileMoney  PaymentMethod = "mobile_money"
+	PaymentMethodBankTransfer PaymentMethod = "bank_transfer"
+	PaymentMethodCard         PaymentMethod = "card"
+	PaymentMethodCheque       PaymentMethod = "cheque"
+	PaymentMethodInsurance    PaymentMethod = "insurance"
+	PaymentMethodWaiver       PaymentMethod = "waiver"
+	PaymentMethodOther        PaymentMethod = "other"
+)
+
+func (e *PaymentMethod) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentMethod(s)
+	case string:
+		*e = PaymentMethod(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentMethod: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentMethod struct {
+	PaymentMethod PaymentMethod `json:"payment_method"`
+	Valid         bool          `json:"valid"` // Valid is true if PaymentMethod is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentMethod) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentMethod, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentMethod.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentMethod) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentMethod), nil
+}
+
+type PaymentPlanStatus string
+
+const (
+	PaymentPlanStatusActive    PaymentPlanStatus = "active"
+	PaymentPlanStatusCompleted PaymentPlanStatus = "completed"
+	PaymentPlanStatusDefaulted PaymentPlanStatus = "defaulted"
+	PaymentPlanStatusCancelled PaymentPlanStatus = "cancelled"
+)
+
+func (e *PaymentPlanStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentPlanStatus(s)
+	case string:
+		*e = PaymentPlanStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentPlanStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentPlanStatus struct {
+	PaymentPlanStatus PaymentPlanStatus `json:"payment_plan_status"`
+	Valid             bool              `json:"valid"` // Valid is true if PaymentPlanStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentPlanStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentPlanStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentPlanStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentPlanStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentPlanStatus), nil
 }
 
 type PrescriptionStatus string
@@ -2226,6 +2456,49 @@ func (ns NullTransferStatus) Value() (driver.Value, error) {
 	return string(ns.TransferStatus), nil
 }
 
+type WaiverStatus string
+
+const (
+	WaiverStatusPending  WaiverStatus = "pending"
+	WaiverStatusApproved WaiverStatus = "approved"
+	WaiverStatusRejected WaiverStatus = "rejected"
+)
+
+func (e *WaiverStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WaiverStatus(s)
+	case string:
+		*e = WaiverStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WaiverStatus: %T", src)
+	}
+	return nil
+}
+
+type NullWaiverStatus struct {
+	WaiverStatus WaiverStatus `json:"waiver_status"`
+	Valid        bool         `json:"valid"` // Valid is true if WaiverStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWaiverStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.WaiverStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WaiverStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWaiverStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WaiverStatus), nil
+}
+
 type WaterTestResult string
 
 const (
@@ -2390,6 +2663,23 @@ type AuthSession struct {
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt  pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type BillingAccount struct {
+	ID             uuid.UUID          `json:"id"`
+	HospitalID     uuid.UUID          `json:"hospital_id"`
+	PatientID      uuid.UUID          `json:"patient_id"`
+	GuarantorID    pgtype.UUID        `json:"guarantor_id"`
+	AccountNumber  string             `json:"account_number"`
+	AccountStatus  AccountStatus      `json:"account_status"`
+	CreditLimit    pgtype.Numeric     `json:"credit_limit"`
+	CurrentBalance pgtype.Numeric     `json:"current_balance"`
+	TotalBilled    pgtype.Numeric     `json:"total_billed"`
+	TotalPaid      pgtype.Numeric     `json:"total_paid"`
+	Notes          pgtype.Text        `json:"notes"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt      pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type ChwPatientAssignment struct {
@@ -2936,6 +3226,92 @@ type InfectionControlLog struct {
 	DeletedAt                 pgtype.Timestamptz  `json:"deleted_at"`
 }
 
+type InsuranceClaim struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	InvoiceID         uuid.UUID          `json:"invoice_id"`
+	SchemeID          uuid.UUID          `json:"scheme_id"`
+	PatientID         uuid.UUID          `json:"patient_id"`
+	ClaimNumber       string             `json:"claim_number"`
+	ClaimDate         pgtype.Date        `json:"claim_date"`
+	ClaimedAmount     pgtype.Numeric     `json:"claimed_amount"`
+	ApprovedAmount    pgtype.Numeric     `json:"approved_amount"`
+	PaidAmount        pgtype.Numeric     `json:"paid_amount"`
+	Status            ClaimStatus        `json:"status"`
+	SubmittedBy       pgtype.UUID        `json:"submitted_by"`
+	SubmittedAt       pgtype.Timestamptz `json:"submitted_at"`
+	ApprovedByInsurer pgtype.Text        `json:"approved_by_insurer"`
+	ApprovedAt        pgtype.Timestamptz `json:"approved_at"`
+	RejectionReason   pgtype.Text        `json:"rejection_reason"`
+	PaymentReference  pgtype.Text        `json:"payment_reference"`
+	Notes             pgtype.Text        `json:"notes"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type InsuranceScheme struct {
+	ID                       uuid.UUID          `json:"id"`
+	HospitalID               uuid.UUID          `json:"hospital_id"`
+	Name                     string             `json:"name"`
+	ShortCode                pgtype.Text        `json:"short_code"`
+	Country                  pgtype.Text        `json:"country"`
+	CoversDialysis           bool               `json:"covers_dialysis"`
+	ReimbursementRate        pgtype.Numeric     `json:"reimbursement_rate"`
+	RequiresPreAuthorization bool               `json:"requires_pre_authorization"`
+	ClaimSubmissionUrl       pgtype.Text        `json:"claim_submission_url"`
+	ContactPerson            pgtype.Text        `json:"contact_person"`
+	ContactPhone             pgtype.Text        `json:"contact_phone"`
+	ContactEmail             pgtype.Text        `json:"contact_email"`
+	Notes                    pgtype.Text        `json:"notes"`
+	IsActive                 bool               `json:"is_active"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt                pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Invoice struct {
+	ID             uuid.UUID          `json:"id"`
+	HospitalID     uuid.UUID          `json:"hospital_id"`
+	AccountID      uuid.UUID          `json:"account_id"`
+	PatientID      uuid.UUID          `json:"patient_id"`
+	SessionID      pgtype.UUID        `json:"session_id"`
+	InvoiceNumber  string             `json:"invoice_number"`
+	InvoiceDate    pgtype.Date        `json:"invoice_date"`
+	DueDate        pgtype.Date        `json:"due_date"`
+	TotalAmount    pgtype.Numeric     `json:"total_amount"`
+	DiscountAmount pgtype.Numeric     `json:"discount_amount"`
+	TaxAmount      pgtype.Numeric     `json:"tax_amount"`
+	NetAmount      pgtype.Numeric     `json:"net_amount"`
+	PaidAmount     pgtype.Numeric     `json:"paid_amount"`
+	BalanceDue     pgtype.Numeric     `json:"balance_due"`
+	Status         InvoiceStatus      `json:"status"`
+	IssuedBy       pgtype.UUID        `json:"issued_by"`
+	Notes          pgtype.Text        `json:"notes"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt      pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type InvoiceItem struct {
+	ID             uuid.UUID          `json:"id"`
+	HospitalID     uuid.UUID          `json:"hospital_id"`
+	InvoiceID      uuid.UUID          `json:"invoice_id"`
+	PriceListID    pgtype.UUID        `json:"price_list_id"`
+	ServiceName    string             `json:"service_name"`
+	ServiceCode    pgtype.Text        `json:"service_code"`
+	Quantity       int32              `json:"quantity"`
+	UnitPrice      pgtype.Numeric     `json:"unit_price"`
+	DiscountAmount pgtype.Numeric     `json:"discount_amount"`
+	TaxAmount      pgtype.Numeric     `json:"tax_amount"`
+	TotalAmount    pgtype.Numeric     `json:"total_amount"`
+	IsClaimed      bool               `json:"is_claimed"`
+	Notes          pgtype.Text        `json:"notes"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt      pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type IronTherapyRecord struct {
 	ID                      uuid.UUID          `json:"id"`
 	HospitalID              uuid.UUID          `json:"hospital_id"`
@@ -3280,6 +3656,51 @@ type PatientIdentifier struct {
 	DeletedAt        pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type Payment struct {
+	ID                uuid.UUID          `json:"id"`
+	HospitalID        uuid.UUID          `json:"hospital_id"`
+	InvoiceID         pgtype.UUID        `json:"invoice_id"`
+	AccountID         uuid.UUID          `json:"account_id"`
+	PatientID         uuid.UUID          `json:"patient_id"`
+	PaymentDate       pgtype.Date        `json:"payment_date"`
+	PaymentTime       pgtype.Time        `json:"payment_time"`
+	Amount            pgtype.Numeric     `json:"amount"`
+	PaymentMethod     PaymentMethod      `json:"payment_method"`
+	ReferenceNumber   pgtype.Text        `json:"reference_number"`
+	MobileMoneyNumber pgtype.Text        `json:"mobile_money_number"`
+	BankName          pgtype.Text        `json:"bank_name"`
+	ChequeNumber      pgtype.Text        `json:"cheque_number"`
+	CardLastFour      pgtype.Text        `json:"card_last_four"`
+	ReceivedBy        uuid.UUID          `json:"received_by"`
+	Notes             pgtype.Text        `json:"notes"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type PaymentPlan struct {
+	ID                   uuid.UUID          `json:"id"`
+	HospitalID           uuid.UUID          `json:"hospital_id"`
+	AccountID            uuid.UUID          `json:"account_id"`
+	PatientID            uuid.UUID          `json:"patient_id"`
+	PlanNumber           string             `json:"plan_number"`
+	TotalAmount          pgtype.Numeric     `json:"total_amount"`
+	DownPayment          pgtype.Numeric     `json:"down_payment"`
+	InstallmentAmount    pgtype.Numeric     `json:"installment_amount"`
+	InstallmentFrequency string             `json:"installment_frequency"`
+	NumberOfInstallments int32              `json:"number_of_installments"`
+	StartDate            pgtype.Date        `json:"start_date"`
+	EndDate              pgtype.Date        `json:"end_date"`
+	AmountPaid           pgtype.Numeric     `json:"amount_paid"`
+	BalanceRemaining     pgtype.Numeric     `json:"balance_remaining"`
+	Status               PaymentPlanStatus  `json:"status"`
+	ApprovedBy           pgtype.UUID        `json:"approved_by"`
+	Notes                pgtype.Text        `json:"notes"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt            pgtype.Timestamptz `json:"deleted_at"`
+}
+
 type PharmacyStock struct {
 	ID                uuid.UUID          `json:"id"`
 	HospitalID        uuid.UUID          `json:"hospital_id"`
@@ -3372,6 +3793,23 @@ type PrescriptionItem struct {
 	CreatedAt          pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt          pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type PriceList struct {
+	ID              uuid.UUID          `json:"id"`
+	HospitalID      uuid.UUID          `json:"hospital_id"`
+	ServiceName     string             `json:"service_name"`
+	ServiceCode     pgtype.Text        `json:"service_code"`
+	ServiceCategory pgtype.Text        `json:"service_category"`
+	UnitPrice       pgtype.Numeric     `json:"unit_price"`
+	SchemeID        pgtype.UUID        `json:"scheme_id"`
+	EffectiveFrom   pgtype.Date        `json:"effective_from"`
+	EffectiveUntil  pgtype.Date        `json:"effective_until"`
+	Description     pgtype.Text        `json:"description"`
+	IsActive        bool               `json:"is_active"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type Referral struct {
@@ -3706,6 +4144,29 @@ type VascularAccessAssessment struct {
 	CreatedAt            pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt            pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type Waiver struct {
+	ID                  uuid.UUID          `json:"id"`
+	HospitalID          uuid.UUID          `json:"hospital_id"`
+	InvoiceID           uuid.UUID          `json:"invoice_id"`
+	PatientID           uuid.UUID          `json:"patient_id"`
+	WaiverNumber        string             `json:"waiver_number"`
+	WaiverAmount        pgtype.Numeric     `json:"waiver_amount"`
+	WaiverPercentage    pgtype.Numeric     `json:"waiver_percentage"`
+	WaiverType          string             `json:"waiver_type"`
+	Reason              string             `json:"reason"`
+	RequestedBy         uuid.UUID          `json:"requested_by"`
+	RequestedAt         pgtype.Timestamptz `json:"requested_at"`
+	ApprovedBy          pgtype.UUID        `json:"approved_by"`
+	ApprovedAt          pgtype.Timestamptz `json:"approved_at"`
+	RejectionReason     pgtype.Text        `json:"rejection_reason"`
+	Status              WaiverStatus       `json:"status"`
+	SupportingDocuments pgtype.Text        `json:"supporting_documents"`
+	Notes               pgtype.Text        `json:"notes"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt           pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type WaterTreatmentLog struct {
