@@ -13,6 +13,10 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 
 	// Initialize handlers
 	patientsHandler := handlers.NewPatientsHandler(pool)
+	sessionsHandler := handlers.NewSessionsHandler(pool)
+	vitalsHandler := handlers.NewVitalsHandler(pool)
+	machinesHandler := handlers.NewMachinesHandler(pool)
+	waterHandler := handlers.NewWaterTreatmentHandler(pool)
 
 	// Protected group
 	auth := r.Group("/api/v1")
@@ -28,5 +32,30 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 		auth.GET("/patients/search", patientsHandler.Search)
 		auth.GET("/patients/:id", patientsHandler.Get)
 		auth.DELETE("/patients/:id", patientsHandler.Delete)
+
+		// Dialysis session endpoints
+		auth.POST("/sessions", sessionsHandler.CreateSession)
+		auth.GET("/sessions/:id", sessionsHandler.GetSession)
+		auth.GET("/sessions", sessionsHandler.ListSessionsByDate)
+		auth.POST("/sessions/:id/start", sessionsHandler.StartSession)
+		auth.POST("/sessions/:id/complete", sessionsHandler.CompleteSession)
+		auth.POST("/sessions/:id/abort", sessionsHandler.AbortSession)
+
+		// Vitals endpoints
+		auth.POST("/vitals", vitalsHandler.RecordVitals)
+		auth.GET("/sessions/:session_id/vitals", vitalsHandler.ListVitalsBySession)
+		auth.GET("/sessions/:session_id/vitals/alerts", vitalsHandler.ListVitalsWithAlerts)
+		auth.POST("/vitals/:id/acknowledge-alert", vitalsHandler.AcknowledgeAlert)
+
+		// Machine endpoints
+		auth.POST("/machines", machinesHandler.CreateMachine)
+		auth.GET("/machines", machinesHandler.ListMachines)
+		auth.GET("/machines/available", machinesHandler.ListAvailableMachines)
+		auth.PATCH("/machines/:id/status", machinesHandler.UpdateMachineStatus)
+
+		// Water treatment endpoints
+		auth.POST("/water-tests", waterHandler.LogWaterTest)
+		auth.GET("/water-tests", waterHandler.ListWaterTests)
+		auth.GET("/water-tests/failed", waterHandler.ListFailedWaterTests)
 	}
 }
