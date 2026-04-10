@@ -1,0 +1,390 @@
+
+● Updated plan
+  ⎿  /plan to preview
+  ⎿  User rejected Claude's plan:
+     ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     │ DMS Schema Analysis: Essential vs. Optional Tables
+     │
+     │ Context
+     │
+     │ Current State: DMS has 93 tables across 9 modules, all fully implemented and functional.
+     │
+     │ User Request: Analyze which tables are truly necessary for running a dialysis unit vs. which are administrative
+     │ overhead. The goal is NOT to integrate with external HMS systems, but to identify what's essential for day-to-day
+     │  dialysis operations.
+     │
+     │ Approach: Categorize all 93 tables into:
+     │ - ESSENTIAL (~45-50 tables): Cannot safely run dialysis without these
+     │ - RECOMMENDED (~20-25 tables): Important for quality care but not critical
+     │ - OPTIONAL (~20-25 tables): Administrative overhead, could be feature-flagged or removed
+     │
+     │ Analysis by Module
+     │
+     │ Module 1: Foundation (13 tables)
+     │
+     │ ESSENTIAL (6 tables):
+     │ 1. ✅ hospitals - Tenant root, multi-tenancy anchor
+     │ 2. ✅ users - Staff authentication and tracking
+     │ 3. ✅ roles - Permission management
+     │ 4. ✅ user_roles - Staff role assignments
+     │ 5. ✅ auth_sessions - Session management
+     │ 6. ✅ file_attachments - Document storage (lab reports, consent forms, images)
+     │
+     │ RECOMMENDED (3 tables):
+     │ 7. 🟡  departments - Organizational structure (useful but not critical for small units)
+     │ 8. 🟡  audit_logs - Compliance and security tracking (recommended for accreditation)
+     │ 9. 🟡  notifications - Clinical alerts (K+ panic values, machine faults)
+     │
+     │ OPTIONAL (4 tables):
+     │ 10. ⚪ hospital_settings - JSONB config (could be environment variables instead)
+     │ 11. ⚪ sync_queue - Offline sync (only needed if mobile/offline deployment)
+     │ 12. ⚪ sync_conflicts - Conflict resolution (only if offline mode)
+     │ 13. ⚪ specialties / staff_specialties / staff_departments - Over-engineered for dialysis unit
+     │
+     │ ---
+     │ Module 2: Patient Core (13 tables)
+     │
+     │ ESSENTIAL (5 tables):
+     │ 14. ✅ patients - Master patient record
+     │ 15. ✅ patient_contacts - Phone/address for appointment reminders
+     │ 16. ✅ allergies - Critical for medication safety (heparin allergy!)
+     │ 17. ✅ comorbidities - HTN, DM, HIV status (affects dialysis prescription)
+     │ 18. ✅ patient_flags - High-risk, infectious disease flags
+     │
+     │ RECOMMENDED (2 tables):
+     │ 19. 🟡  next_of_kin - Emergency contact (important but could merge with contacts)
+     │ 20. 🟡  patient_identifiers - NHIF, national ID (needed for billing/insurance)
+     │
+     │ OPTIONAL (6 tables):
+     │ 21. ⚪ diagnoses - ICD-10 diagnoses (most dialysis patients have ESRD, overkill for separate table)
+     │ 22. ⚪ referrals - Inbound/outbound referrals (administrative, not clinical necessity)
+     │ 23. ⚪ consents - Informed consent tracking (can store as file_attachment instead)
+     │ 24. ⚪ admissions - Inpatient admissions (dialysis is mostly outpatient!)
+     │ 25. ⚪ transfers - Inter-hospital transfers (rare, administrative)
+     │ 26. ⚪ community_health_workers + chw_patient_assignments - Rural CHW program (niche use case)
+     │
+     │ ---
+     │ Module 3: Dialysis Clinical (18 tables) - CORE MODULE
+     │
+     │ ESSENTIAL (17 tables):
+     │ 27. ✅ dialysis_machines - Machine inventory
+     │ 28. ✅ session_schedules - MWF/TTS scheduling
+     │ 29. ✅ dialysis_sessions - Master session record
+     │ 30. ✅ dialysis_prescriptions - QB, QD, time, UF goal
+     │ 31. ✅ session_vitals - BP, HR, temp every 30 mins
+     │ 32. ✅ session_fluid_balance - UF achieved, fluid removed
+     │ 33. ✅ session_complications - Hypotension, cramps, clotting
+     │ 34. ✅ session_nursing_notes - Free-text observations
+     │ 35. ✅ session_staff_assignments - Nurse-patient ratio tracking
+     │ 36. ✅ vascular_access - AV fistula, graft, CVC
+     │ 37. ✅ vascular_access_assessments - Thrill, bruit, flow
+     │ 38. ✅ dry_weight_records - Target weight management
+     │ 39. ✅ adequacy_assessments - Kt/V, URR (monthly adequacy)
+     │ 40. ✅ anticoagulation_records - Heparin/citrate dosing
+     │ 41. ✅ dialysate_records - Dialysate composition
+     │ 42. ✅ water_treatment_logs - RO water quality (MANDATORY for safety)
+     │ 43. ✅ infection_control_logs - Machine disinfection
+     │
+     │ RECOMMENDED (1 table):
+     │ 44. 🟡  power_outage_logs - Medico-legal documentation (important but not daily use)
+     │
+     │ OPTIONAL: 0 - This module is all essential!
+     │
+     │ ---
+     │ Module 4: Laboratory (10 tables)
+     │
+     │ ESSENTIAL (0 tables):
+     │ - Lab results typically come from hospital LIS, not managed in dialysis unit
+     │
+     │ RECOMMENDED (3 tables):
+     │ 45. 🟡  lab_critical_alerts - K+ panic values, creatinine >10 (useful but could be notification instead)
+     │ 46. 🟡  lab_orders - Track pending labs (helpful for workflow)
+     │ 47. 🟡  lab_results - Store historical results (helpful but could query LIS)
+     │
+     │ OPTIONAL (7 tables):
+     │ 48. ⚪ lab_test_catalog - Test definitions (use hospital LIS catalog)
+     │ 49. ⚪ lab_panels - Grouped tests (Renal Panel) (use LIS panels)
+     │ 50. ⚪ lab_order_items - Individual test items (over-engineered)
+     │ 51. ⚪ lab_reference_ranges - Normal ranges (use LIS ranges)
+     │ 52. ⚪ microbiology_results - Cultures (use hospital LIS)
+     │ 53. ⚪ imaging_orders - X-ray, USS orders (use hospital PACS)
+     │ 54. ⚪ imaging_results - Radiology reports (use hospital PACS)
+     │
+     │ Verdict: Entire lab module is optional if hospital has LIS. Keep only lab_critical_alerts for dialysis-specific
+     │ panic values.
+     │
+     │ ---
+     │ Module 5: Pharmacy & Medications (9 tables)
+     │
+     │ ESSENTIAL (1 table):
+     │ 55. ✅ medication_administrations - Track EPO, iron, IV meds given during dialysis
+     │
+     │ RECOMMENDED (2 tables):
+     │ 56. 🟡  medication_prescriptions - Active medication list (useful but could be simple JSONB in patient record)
+     │ 57. 🟡  drug_interactions - Interaction checking (helpful for safety but could use external API)
+     │
+     │ OPTIONAL (6 tables):
+     │ 58. ⚪ medication_catalog - Formulary (use hospital pharmacy catalog)
+     │ 59. ⚪ prescription_items - Individual prescription items (over-engineered)
+     │ 60. ⚪ prescription_refills - Refill tracking (administrative)
+     │ 61. ⚪ pharmacy_stock - Inventory management (use hospital pharmacy system)
+     │ 62. ⚪ stock_movements - Stock transactions (use hospital pharmacy)
+     │ 63. ⚪ adverse_drug_reactions - ADR reporting (could be incident report or complication)
+     │
+     │ Verdict: Simplify to just medication_administrations for intra-dialysis meds. Rest is hospital pharmacy
+     │ responsibility.
+     │
+     │ ---
+     │ Module 6: Equipment & Consumables (7 tables)
+     │
+     │ ESSENTIAL (1 table):
+     │ 64. ✅ dialysis_machines (already counted in Module 3)
+     │
+     │ RECOMMENDED (2 tables):
+     │ 65. 🟡  equipment_maintenance - Preventive maintenance schedule (important for machine longevity)
+     │ 66. 🟡  equipment_faults - Fault reporting and repair tracking
+     │
+     │ OPTIONAL (4 tables):
+     │ 67. ⚪ equipment (general hospital equipment, not dialysis-specific)
+     │ 68. ⚪ equipment_certifications - Calibration certificates (administrative)
+     │ 69. ⚪ consumables_catalog - Dialyzer, bloodlines catalog (simple list could be static data)
+     │ 70. ⚪ consumables_stock - Inventory management (spreadsheet-level tracking)
+     │ 71. ⚪ consumable_usage - Usage per session (over-engineered, could track in session notes)
+     │
+     │ Verdict: Keep basic machine maintenance tracking, remove general equipment and consumables inventory.
+     │
+     │ ---
+     │ Module 7: Billing & Finance (9 tables)
+     │
+     │ ESSENTIAL (2 tables):
+     │ 72. ✅ invoices - Patient billing records
+     │ 73. ✅ payments - Payment tracking (cash, mobile money, insurance)
+     │
+     │ RECOMMENDED (3 tables):
+     │ 74. 🟡  billing_accounts - Patient account balance
+     │ 75. 🟡  insurance_claims - NHIF claim submission
+     │ 76. 🟡  billing_waivers - Charity care, fee waivers
+     │
+     │ OPTIONAL (4 tables):
+     │ 77. ⚪ service_catalog + price_lists - Service pricing (could be simple config/static data)
+     │ 78. ⚪ invoice_items - Itemized charges (over-engineered for dialysis, flat session fee is common)
+     │ 79. ⚪ payment_plans - Installment plans (administrative overhead)
+     │ 80. ⚪ insurance_schemes - Insurance plan definitions (static data)
+     │
+     │ Verdict: Simplify billing to invoices + payments + basic insurance claims. Remove complex pricing catalogs.
+     │
+     │ ---
+     │ Module 8: Staff & HR (8 tables)
+     │
+     │ ESSENTIAL (1 table):
+     │ 81. ✅ users (already counted in Module 1)
+     │
+     │ RECOMMENDED (2 tables):
+     │ 82. 🟡  staff_schedules + shift_assignments - Shift scheduling (useful but could use paper/whiteboard)
+     │ 83. 🟡  staff_qualifications - License expiry tracking (important for compliance)
+     │
+     │ OPTIONAL (5 tables):
+     │ 84. ⚪ staff_profiles - Extended staff info (overkill, basic user table sufficient)
+     │ 85. ⚪ leave_records - Leave management (HR function, not clinical)
+     │ 86. ⚪ staff_performance - Performance reviews (HR function)
+     │ 87. ⚪ incident_reports - Incident reporting (could merge with complications or audit logs)
+     │ 88. ⚪ training_records - Training tracking (HR function)
+     │
+     │ Verdict: Remove HR functions (performance reviews, training, leave). Keep basic shift scheduling and license
+     │ tracking.
+     │
+     │ ---
+     │ Module 9: Outcomes & Registry (6 tables) - CRITICAL FOR REPORTING
+     │
+     │ ESSENTIAL (4 tables):
+     │ 89. ✅ clinical_outcomes - Dialysis outcomes tracking (adequacy, infection rates, access survival)
+     │ 90. ✅ mortality_records - Death records (required for MOH reporting)
+     │ 91. ✅ quality_indicators - KDOQI quality metrics
+     │ 92. ✅ national_registry_sync - MOH/donor registry submission
+     │
+     │ RECOMMENDED (2 tables):
+     │ 93. 🟡  hospitalizations - Hospitalization tracking (important for outcomes but could simplify)
+     │ 94. 🟡  donor_reports - MOH/donor report generation (important but could be reporting view, not separate table)
+     │
+     │ OPTIONAL: 0 - This module is critical for compliance and reporting.
+     │
+     │ ---
+     │ Summary: 93 Tables Categorized
+     │
+     │ ESSENTIAL: 48 tables
+     │
+     │ Module 1 (Foundation): hospitals, users, roles, user_roles, auth_sessions, file_attachments
+     │ Module 2 (Patient): patients, patient_contacts, allergies, comorbidities, patient_flags
+     │ Module 3 (Dialysis Clinical): dialysis_machines, session_schedules, dialysis_sessions, dialysis_prescriptions,
+     │ session_vitals, session_fluid_balance, session_complications, session_nursing_notes, session_staff_assignments,
+     │ vascular_access, vascular_access_assessments, dry_weight_records, adequacy_assessments, anticoagulation_records,
+     │ dialysate_records, water_treatment_logs, infection_control_logs
+     │ Module 5 (Pharmacy): medication_administrations
+     │ Module 7 (Billing): invoices, payments
+     │ Module 9 (Outcomes): clinical_outcomes, mortality_records, quality_indicators, national_registry_sync
+     │
+     │ RECOMMENDED: 20 tables
+     │
+     │ Module 1: departments, audit_logs, notifications
+     │ Module 2: next_of_kin, patient_identifiers
+     │ Module 3: power_outage_logs
+     │ Module 4: lab_critical_alerts, lab_orders, lab_results
+     │ Module 5: medication_prescriptions, drug_interactions
+     │ Module 6: equipment_maintenance, equipment_faults
+     │ Module 7: billing_accounts, insurance_claims, billing_waivers
+     │ Module 8: staff_schedules, shift_assignments, staff_qualifications
+     │ Module 9: hospitalizations, donor_reports
+     │
+     │ OPTIONAL: 25 tables
+     │
+     │ Module 1: hospital_settings, sync_queue, sync_conflicts, specialties tables (3)
+     │ Module 2: diagnoses, referrals, consents, admissions, transfers, CHW tables (2)
+     │ Module 4: lab_test_catalog, lab_panels, lab_order_items, lab_reference_ranges, microbiology_results, imaging
+     │ tables (2)
+     │ Module 5: medication_catalog, prescription_items, prescription_refills, pharmacy_stock, stock_movements,
+     │ adverse_drug_reactions
+     │ Module 6: equipment (general), equipment_certifications, consumables tables (3)
+     │ Module 7: service_catalog, price_lists, invoice_items, payment_plans, insurance_schemes
+     │ Module 8: staff_profiles, leave_records, staff_performance, incident_reports, training_records
+     │
+     │ ---
+     │ Proposed Optimization Strategies
+     │
+     │ Option 1: Minimal DMS (48 Essential Tables)
+     │
+     │ - Keep only essential tables
+     │ - Removes 45 tables (48%)
+     │ - Best for small dialysis units (<10 patients)
+     │ - Trade-off: Lose quality tracking, detailed reporting, HR features
+     │
+     │ Option 2: Core DMS (68 Tables = Essential + Recommended)
+     │
+     │ - Keep essential + recommended
+     │ - Removes 25 tables (27%)
+     │ - Best for medium dialysis units (10-50 patients)
+     │ - Trade-off: Lose lab module, advanced billing, HR features
+     │ - RECOMMENDED OPTION ✅
+     │
+     │ Option 3: Feature Flags (Keep All 93, Toggle via Config)
+     │
+     │ - Keep all tables but make modules optional via config
+     │ - Add enabled_modules JSONB to hospital_settings
+     │ - UI hides disabled modules
+     │ - Migrations stay in place but tables remain empty if unused
+     │ - Best for flexibility across different hospital sizes
+     │ - Zero data loss, maximum flexibility
+     │
+     │ Option 4: Tiered Plans (Feature-Based Licensing)
+     │
+     │ - Basic Tier (48 tables): Core dialysis operations only
+     │ - Standard Tier (68 tables): + Outcomes tracking, basic billing, equipment maintenance
+     │ - Enterprise Tier (93 tables): + Full lab integration, advanced HR, inventory management
+     │
+     │ ---
+     │ Recommended Approach: Option 2 (Core DMS - 68 Tables)
+     │
+     │ Tables to Remove (25 total):
+     │
+     │ Module 1: hospital_settings, sync_queue, sync_conflicts, specialties (3 tables)
+     │ Module 2: diagnoses, referrals, consents, admissions, transfers, CHW (2 tables)
+     │ Module 4: lab_test_catalog, lab_panels, lab_order_items, lab_reference_ranges, microbiology_results, imaging (2
+     │ tables)
+     │ Module 5: medication_catalog, prescription_items, prescription_refills, pharmacy_stock, stock_movements,
+     │ adverse_drug_reactions
+     │ Module 6: equipment (general), equipment_certifications, consumables (3 tables)
+     │ Module 7: service_catalog, price_lists, invoice_items, payment_plans, insurance_schemes
+     │ Module 8: staff_profiles, leave_records, staff_performance, incident_reports, training_records
+     │
+     │ Impact:
+     │
+     │ - 27% reduction in table count (93 → 68)
+     │ - Removes administrative overhead (HR, inventory, complex billing)
+     │ - Keeps all clinical safety features intact
+     │ - Keeps outcomes and quality tracking for MOH/donor reporting
+     │ - Simplifies maintenance and reduces schema complexity
+     │
+     │ Migration Strategy:
+     │
+     │ 1. Audit Current Data: Check if any removed tables have data in production
+     │ 2. Create Backup: Full database backup before removal
+     │ 3. Create Down Migrations: For each removed table (reversible)
+     │ 4. Remove Queries: Delete sqlc query files for removed tables
+     │ 5. Remove Handlers: Delete API handlers for removed modules
+     │ 6. Update Routes: Remove endpoints for deleted modules
+     │ 7. Regenerate sqlc: Run sqlc generate after query file removal
+     │ 8. Test Build: Verify code compiles
+     │ 9. Update Documentation: Update CLAUDE.md with reduced schema
+     │
+     │ ---
+     │ Alternative: Configuration-Based Approach (No Schema Changes)
+     │
+     │ Instead of deleting tables, add feature flags to hospital_settings:
+     │
+     │ {
+     │   "enabled_modules": {
+     │     "lab_management": false,
+     │     "full_pharmacy": false,
+     │     "hr_management": false,
+     │     "inventory_tracking": false,
+     │     "advanced_billing": false,
+     │     "offline_sync": false,
+     │     "chw_program": false
+     │   }
+     │ }
+     │
+     │ Pros:
+     │ - No schema changes required
+     │ - No data loss
+     │ - Can enable features later without migrations
+     │ - Different hospitals can choose different feature sets
+     │
+     │ Cons:
+     │ - Tables still exist (slightly larger database)
+     │ - Unused migrations still in codebase
+     │ - Queries and handlers still present (more code to maintain)
+     │
+     │ ---
+     │ User Decision Points
+     │
+     │ Questions for user:
+     │
+     │ 1. Which option do you prefer?
+     │   - Option 1: Minimal (48 tables) - bare essentials only
+     │   - Option 2: Core (68 tables) - essentials + recommended ✅
+     │   - Option 3: Feature flags (93 tables with config toggles)
+     │   - Option 4: Tiered licensing model
+     │ 2. If removing tables, what about existing data?
+     │   - Export removed data to CSV/JSON for archival?
+     │   - Permanent deletion acceptable?
+     │ 3. Priority: Simplicity vs. Flexibility?
+     │   - Simplicity: Remove unused tables now (Option 2)
+     │   - Flexibility: Keep tables, use feature flags (Option 3)
+     │ 4. Any specific modules you KNOW you don't need?
+     │   - CHW program? (Rural community health workers)
+     │   - Lab module? (If hospital has LIS)
+     │   - HR module? (Performance reviews, training records)
+     │   - Inventory? (Consumables stock tracking)
+     │
+     │ ---
+     │ Next Steps
+     │
+     │ After user confirms preferred option:
+     │
+     │ 1. If Option 2 (Remove 25 tables):
+     │   - Create down migrations for removed tables
+     │   - Delete query files
+     │   - Delete handlers
+     │   - Regenerate sqlc
+     │   - Update documentation
+     │ 2. If Option 3 (Feature flags):
+     │   - Add enabled_modules config
+     │   - Update middleware to check module access
+     │   - Update UI to hide disabled modules
+     │   - No schema changes
+     │ 3. Update CLAUDE.md with final architecture
+     │ 4. Create implementation checklist
+     │ 5. Test on dev database
+     ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+	 - Option 3: Feature flags (93 tables with config toggles)
+     │   - Option 4: Tiered licensing model
+	I choose both of these, its beter when they are combined

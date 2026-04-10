@@ -4,10 +4,16 @@ backend/*.exe
 backend/*.out
 backend/*.test
 backend/vendor/
+backend/main
 
 # Environment
 .env
 backend/.env
+
+# Debug/test output files
+*.txt
+!accdb_tables.txt
+!Updated_Plan.txt
 
 # Flutter / Dart
 flutter/**/.dart_tool/

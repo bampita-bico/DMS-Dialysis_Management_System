@@ -23,21 +23,21 @@ RETURNING id, hospital_id, user_id, department_id, cadre, license_number, licens
 `
 
 type CreateStaffProfileParams struct {
-	HospitalID            uuid.UUID   `json:"hospital_id"`
-	UserID                uuid.UUID   `json:"user_id"`
-	DepartmentID          pgtype.UUID `json:"department_id"`
-	Cadre                 StaffCadre  `json:"cadre"`
-	LicenseNumber         pgtype.Text `json:"license_number"`
-	LicenseExpiryDate     pgtype.Date `json:"license_expiry_date"`
-	RegistrationBody      pgtype.Text `json:"registration_body"`
-	Specialization        pgtype.Text `json:"specialization"`
-	YearsOfExperience     pgtype.Int4 `json:"years_of_experience"`
-	HireDate              pgtype.Date `json:"hire_date"`
-	EmployeeNumber        pgtype.Text `json:"employee_number"`
-	EmergencyContactName  pgtype.Text `json:"emergency_contact_name"`
-	EmergencyContactPhone pgtype.Text `json:"emergency_contact_phone"`
-	BloodType             pgtype.Text `json:"blood_type"`
-	Notes                 pgtype.Text `json:"notes"`
+	HospitalID            uuid.UUID     `json:"hospital_id"`
+	UserID                uuid.UUID     `json:"user_id"`
+	DepartmentID          pgtype.UUID   `json:"department_id"`
+	Cadre                 StaffCadre    `json:"cadre"`
+	LicenseNumber         pgtype.Text   `json:"license_number"`
+	LicenseExpiryDate     pgtype.Date   `json:"license_expiry_date"`
+	RegistrationBody      pgtype.Text   `json:"registration_body"`
+	Specialization        pgtype.Text   `json:"specialization"`
+	YearsOfExperience     pgtype.Int4   `json:"years_of_experience"`
+	HireDate              pgtype.Date   `json:"hire_date"`
+	EmployeeNumber        pgtype.Text   `json:"employee_number"`
+	EmergencyContactName  pgtype.Text   `json:"emergency_contact_name"`
+	EmergencyContactPhone pgtype.Text   `json:"emergency_contact_phone"`
+	BloodType             NullBloodType `json:"blood_type"`
+	Notes                 pgtype.Text   `json:"notes"`
 }
 
 func (q *Queries) CreateStaffProfile(ctx context.Context, arg CreateStaffProfileParams) (StaffProfile, error) {
