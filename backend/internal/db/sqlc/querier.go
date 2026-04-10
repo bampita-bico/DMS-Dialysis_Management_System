@@ -241,6 +241,7 @@ type Querier interface {
 	GetFileAttachment(ctx context.Context, id uuid.UUID) (FileAttachment, error)
 	GetFluidBalanceBySession(ctx context.Context, sessionID uuid.UUID) (SessionFluidBalance, error)
 	GetHospital(ctx context.Context, id uuid.UUID) (Hospital, error)
+	GetHospitalPlan(ctx context.Context, id uuid.UUID) (GetHospitalPlanRow, error)
 	GetHospitalSetting(ctx context.Context, arg GetHospitalSettingParams) (HospitalSetting, error)
 	GetHospitalization(ctx context.Context, id uuid.UUID) (Hospitalization, error)
 	GetImagingOrder(ctx context.Context, id uuid.UUID) (ImagingOrder, error)
@@ -415,6 +416,7 @@ type Querier interface {
 	ListHospitalizationsByPatient(ctx context.Context, patientID uuid.UUID) ([]Hospitalization, error)
 	ListHospitalizationsByPeriod(ctx context.Context, arg ListHospitalizationsByPeriodParams) ([]Hospitalization, error)
 	ListHospitals(ctx context.Context) ([]Hospital, error)
+	ListHospitalsByPlan(ctx context.Context, subscriptionPlan string) ([]Hospital, error)
 	ListIdentifiersByPatient(ctx context.Context, patientID uuid.UUID) ([]PatientIdentifier, error)
 	ListImagingOrdersByModality(ctx context.Context, arg ListImagingOrdersByModalityParams) ([]ImagingOrder, error)
 	ListImagingOrdersByPatient(ctx context.Context, arg ListImagingOrdersByPatientParams) ([]ImagingOrder, error)
@@ -583,8 +585,10 @@ type Querier interface {
 	UpdateDialysisPrescription(ctx context.Context, arg UpdateDialysisPrescriptionParams) (DialysisPrescription, error)
 	UpdateDispensedQuantity(ctx context.Context, arg UpdateDispensedQuantityParams) (PrescriptionItem, error)
 	UpdateDryWeightRecord(ctx context.Context, arg UpdateDryWeightRecordParams) (DryWeightRecord, error)
+	UpdateEnabledModules(ctx context.Context, arg UpdateEnabledModulesParams) error
 	UpdateEquipmentStatus(ctx context.Context, arg UpdateEquipmentStatusParams) (Equipment, error)
 	UpdateHospital(ctx context.Context, arg UpdateHospitalParams) (Hospital, error)
+	UpdateHospitalPlan(ctx context.Context, arg UpdateHospitalPlanParams) error
 	UpdateHospitalSetting(ctx context.Context, arg UpdateHospitalSettingParams) (HospitalSetting, error)
 	UpdateHospitalizationDischarge(ctx context.Context, arg UpdateHospitalizationDischargeParams) (Hospitalization, error)
 	UpdateImagingResult(ctx context.Context, arg UpdateImagingResultParams) (ImagingResult, error)

@@ -17,7 +17,7 @@ INSERT INTO hospitals (
   name, short_code, tier, region, country, address, phone, email, license_no, license_expiry, settings
 ) VALUES (
   $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
-) RETURNING id, name, short_code, tier, region, country, address, phone, email, license_no, license_expiry, is_active, settings, created_at, updated_at, deleted_at
+) RETURNING id, name, short_code, tier, region, country, address, phone, email, license_no, license_expiry, is_active, settings, created_at, updated_at, deleted_at, subscription_plan, enabled_modules
 `
 
 type CreateHospitalParams struct {
@@ -66,12 +66,14 @@ func (q *Queries) CreateHospital(ctx context.Context, arg CreateHospitalParams) 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.SubscriptionPlan,
+		&i.EnabledModules,
 	)
 	return i, err
 }
 
 const getHospital = `-- name: GetHospital :one
-SELECT id, name, short_code, tier, region, country, address, phone, email, license_no, license_expiry, is_active, settings, created_at, updated_at, deleted_at FROM hospitals
+SELECT id, name, short_code, tier, region, country, address, phone, email, license_no, license_expiry, is_active, settings, created_at, updated_at, deleted_at, subscription_plan, enabled_modules FROM hospitals
 WHERE id = $1 AND deleted_at IS NULL
 LIMIT 1
 `
@@ -96,12 +98,32 @@ func (q *Queries) GetHospital(ctx context.Context, id uuid.UUID) (Hospital, erro
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.SubscriptionPlan,
+		&i.EnabledModules,
 	)
 	return i, err
 }
 
+const getHospitalPlan = `-- name: GetHospitalPlan :one
+SELECT subscription_plan, enabled_modules FROM hospitals
+WHERE id = $1 AND deleted_at IS NULL
+LIMIT 1
+`
+
+type GetHospitalPlanRow struct {
+	SubscriptionPlan string `json:"subscription_plan"`
+	EnabledModules   []byte `json:"enabled_modules"`
+}
+
+func (q *Queries) GetHospitalPlan(ctx context.Context, id uuid.UUID) (GetHospitalPlanRow, error) {
+	row := q.db.QueryRow(ctx, getHospitalPlan, id)
+	var i GetHospitalPlanRow
+	err := row.Scan(&i.SubscriptionPlan, &i.EnabledModules)
+	return i, err
+}
+
 const listHospitals = `-- name: ListHospitals :many
-SELECT id, name, short_code, tier, region, country, address, phone, email, license_no, license_expiry, is_active, settings, created_at, updated_at, deleted_at FROM hospitals
+SELECT id, name, short_code, tier, region, country, address, phone, email, license_no, license_expiry, is_active, settings, created_at, updated_at, deleted_at, subscription_plan, enabled_modules FROM hospitals
 WHERE deleted_at IS NULL
 ORDER BY name
 `
@@ -132,6 +154,53 @@ func (q *Queries) ListHospitals(ctx context.Context) ([]Hospital, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.SubscriptionPlan,
+			&i.EnabledModules,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listHospitalsByPlan = `-- name: ListHospitalsByPlan :many
+SELECT id, name, short_code, tier, region, country, address, phone, email, license_no, license_expiry, is_active, settings, created_at, updated_at, deleted_at, subscription_plan, enabled_modules FROM hospitals
+WHERE subscription_plan = $1 AND deleted_at IS NULL
+ORDER BY name
+`
+
+func (q *Queries) ListHospitalsByPlan(ctx context.Context, subscriptionPlan string) ([]Hospital, error) {
+	rows, err := q.db.Query(ctx, listHospitalsByPlan, subscriptionPlan)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Hospital
+	for rows.Next() {
+		var i Hospital
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.ShortCode,
+			&i.Tier,
+			&i.Region,
+			&i.Country,
+			&i.Address,
+			&i.Phone,
+			&i.Email,
+			&i.LicenseNo,
+			&i.LicenseExpiry,
+			&i.IsActive,
+			&i.Settings,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.SubscriptionPlan,
+			&i.EnabledModules,
 		); err != nil {
 			return nil, err
 		}
@@ -154,11 +223,27 @@ func (q *Queries) SoftDeleteHospital(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const updateEnabledModules = `-- name: UpdateEnabledModules :exec
+UPDATE hospitals
+SET enabled_modules = $2, updated_at = now()
+WHERE id = $1 AND deleted_at IS NULL
+`
+
+type UpdateEnabledModulesParams struct {
+	ID             uuid.UUID `json:"id"`
+	EnabledModules []byte    `json:"enabled_modules"`
+}
+
+func (q *Queries) UpdateEnabledModules(ctx context.Context, arg UpdateEnabledModulesParams) error {
+	_, err := q.db.Exec(ctx, updateEnabledModules, arg.ID, arg.EnabledModules)
+	return err
+}
+
 const updateHospital = `-- name: UpdateHospital :one
 UPDATE hospitals
 SET name = $2, tier = $3, region = $4, address = $5, phone = $6, email = $7
 WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, name, short_code, tier, region, country, address, phone, email, license_no, license_expiry, is_active, settings, created_at, updated_at, deleted_at
+RETURNING id, name, short_code, tier, region, country, address, phone, email, license_no, license_expiry, is_active, settings, created_at, updated_at, deleted_at, subscription_plan, enabled_modules
 `
 
 type UpdateHospitalParams struct {
@@ -199,6 +284,24 @@ func (q *Queries) UpdateHospital(ctx context.Context, arg UpdateHospitalParams) 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.SubscriptionPlan,
+		&i.EnabledModules,
 	)
 	return i, err
+}
+
+const updateHospitalPlan = `-- name: UpdateHospitalPlan :exec
+UPDATE hospitals
+SET subscription_plan = $2, updated_at = now()
+WHERE id = $1 AND deleted_at IS NULL
+`
+
+type UpdateHospitalPlanParams struct {
+	ID               uuid.UUID `json:"id"`
+	SubscriptionPlan string    `json:"subscription_plan"`
+}
+
+func (q *Queries) UpdateHospitalPlan(ctx context.Context, arg UpdateHospitalPlanParams) error {
+	_, err := q.db.Exec(ctx, updateHospitalPlan, arg.ID, arg.SubscriptionPlan)
+	return err
 }

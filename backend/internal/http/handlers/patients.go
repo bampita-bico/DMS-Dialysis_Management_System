@@ -20,6 +20,33 @@ func NewPatientsHandler(pool *pgxpool.Pool) *PatientsHandler {
 	return &PatientsHandler{pool: pool}
 }
 
+// Blood type mapping from display format to database format
+var bloodTypeMapping = map[string]string{
+	"A+":      "a_positive",
+	"A-":      "a_negative",
+	"B+":      "b_positive",
+	"B-":      "b_negative",
+	"AB+":     "ab_positive",
+	"AB-":     "ab_negative",
+	"O+":      "o_positive",
+	"O-":      "o_negative",
+	"unknown": "unknown",
+	// Also accept the database format
+	"a_positive":  "a_positive",
+	"a_negative":  "a_negative",
+	"b_positive":  "b_positive",
+	"b_negative":  "b_negative",
+	"ab_positive": "ab_positive",
+	"ab_negative": "ab_negative",
+	"o_positive":  "o_positive",
+	"o_negative":  "o_negative",
+}
+
+func mapBloodType(input string) (string, bool) {
+	mapped, ok := bloodTypeMapping[input]
+	return mapped, ok
+}
+
 func (h *PatientsHandler) Create(c *gin.Context) {
 	var req struct {
 		MRN                string `json:"mrn" binding:"required"`
@@ -42,6 +69,22 @@ func (h *PatientsHandler) Create(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// Validate and map blood type
+	var mappedBloodType string
+	if req.BloodType != "" {
+		var ok bool
+		mappedBloodType, ok = mapBloodType(req.BloodType)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid blood_type",
+				"valid_values": []string{"A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"},
+			})
+			return
+		}
+	} else {
+		mappedBloodType = "unknown"
 	}
 
 	hospitalIDStr, _ := c.Get(middleware.CtxHospitalID)
@@ -72,7 +115,7 @@ func (h *PatientsHandler) Create(c *gin.Context) {
 		PreferredName:     pgtype.Text{String: req.PreferredName, Valid: req.PreferredName != ""},
 		DateOfBirth:       pgtype.Date{Time: dob, Valid: true},
 		Sex:               sqlc.SexType(req.Sex),
-		BloodType:         sqlc.BloodType(req.BloodType),
+		BloodType:         sqlc.BloodType(mappedBloodType),
 		MaritalStatus:     sqlc.NullMaritalStatus{MaritalStatus: sqlc.MaritalStatus(req.MaritalStatus), Valid: req.MaritalStatus != ""},
 		Nationality:       pgtype.Text{String: req.Nationality, Valid: req.Nationality != ""},
 		Religion:          pgtype.Text{String: req.Religion, Valid: req.Religion != ""},

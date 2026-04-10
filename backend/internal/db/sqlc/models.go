@@ -378,18 +378,19 @@ func (ns NullAnticoagRoute) Value() (driver.Value, error) {
 	return string(ns.AnticoagRoute), nil
 }
 
+// Blood type enum with SQL-friendly identifiers (a_positive, b_negative, etc.)
 type BloodType string
 
 const (
-	BloodTypeAPos    BloodType = "A+"
-	BloodTypeANeg    BloodType = "A-"
-	BloodTypeBPos    BloodType = "B+"
-	BloodTypeBNeg    BloodType = "B-"
-	BloodTypeABPos   BloodType = "AB+"
-	BloodTypeABNeg   BloodType = "AB-"
-	BloodTypeOPos    BloodType = "O+"
-	BloodTypeONeg    BloodType = "O-"
-	BloodTypeUnknown BloodType = "unknown"
+	BloodTypeAPositive  BloodType = "a_positive"
+	BloodTypeANegative  BloodType = "a_negative"
+	BloodTypeBPositive  BloodType = "b_positive"
+	BloodTypeBNegative  BloodType = "b_negative"
+	BloodTypeAbPositive BloodType = "ab_positive"
+	BloodTypeAbNegative BloodType = "ab_negative"
+	BloodTypeOPositive  BloodType = "o_positive"
+	BloodTypeONegative  BloodType = "o_negative"
+	BloodTypeUnknown    BloodType = "unknown"
 )
 
 func (e *BloodType) Scan(src interface{}) error {
@@ -3607,6 +3608,10 @@ type Hospital struct {
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt     pgtype.Timestamptz `json:"deleted_at"`
+	// Subscription tier: basic (48 tables), standard (68 tables), enterprise (93 tables)
+	SubscriptionPlan string `json:"subscription_plan"`
+	// Feature flags for optional modules
+	EnabledModules []byte `json:"enabled_modules"`
 }
 
 type HospitalSetting struct {
@@ -4654,7 +4659,7 @@ type StaffProfile struct {
 	EmployeeNumber        pgtype.Text        `json:"employee_number"`
 	EmergencyContactName  pgtype.Text        `json:"emergency_contact_name"`
 	EmergencyContactPhone pgtype.Text        `json:"emergency_contact_phone"`
-	BloodType             pgtype.Text        `json:"blood_type"`
+	BloodType             NullBloodType      `json:"blood_type"`
 	Notes                 pgtype.Text        `json:"notes"`
 	IsActive              bool               `json:"is_active"`
 	CreatedAt             pgtype.Timestamptz `json:"created_at"`

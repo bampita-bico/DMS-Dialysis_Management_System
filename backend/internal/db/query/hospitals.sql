@@ -25,3 +25,23 @@ RETURNING *;
 UPDATE hospitals
 SET deleted_at = now()
 WHERE id = $1;
+
+-- name: GetHospitalPlan :one
+SELECT subscription_plan, enabled_modules FROM hospitals
+WHERE id = $1 AND deleted_at IS NULL
+LIMIT 1;
+
+-- name: UpdateHospitalPlan :exec
+UPDATE hospitals
+SET subscription_plan = $2, updated_at = now()
+WHERE id = $1 AND deleted_at IS NULL;
+
+-- name: UpdateEnabledModules :exec
+UPDATE hospitals
+SET enabled_modules = $2, updated_at = now()
+WHERE id = $1 AND deleted_at IS NULL;
+
+-- name: ListHospitalsByPlan :many
+SELECT * FROM hospitals
+WHERE subscription_plan = $1 AND deleted_at IS NULL
+ORDER BY name;
