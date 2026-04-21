@@ -164,7 +164,7 @@ func (h *HospitalizationsHandler) Create(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create hospitalization", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create hospitalization"})
 		return
 	}
 

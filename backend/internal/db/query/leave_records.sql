@@ -39,5 +39,15 @@ SET status = 'rejected', rejection_reason = $2
 WHERE id = $1 AND deleted_at IS NULL
 RETURNING *;
 
+-- name: HasApprovedLeaveOnDate :one
+SELECT EXISTS(
+    SELECT 1 FROM leave_records
+    WHERE staff_id = $1
+      AND start_date <= $2
+      AND end_date >= $2
+      AND status = 'approved'
+      AND deleted_at IS NULL
+) AS on_leave;
+
 -- name: DeleteLeaveRecord :exec
 UPDATE leave_records SET deleted_at = now() WHERE id = $1;

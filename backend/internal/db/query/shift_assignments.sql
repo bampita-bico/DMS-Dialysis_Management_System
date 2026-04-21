@@ -44,5 +44,15 @@ SET clock_out_time = now()
 WHERE id = $1 AND deleted_at IS NULL
 RETURNING *;
 
+-- name: HasOverlappingShift :one
+SELECT EXISTS(
+    SELECT 1 FROM shift_assignments
+    WHERE staff_id = $1
+      AND shift_date = $2
+      AND shift_start_time < $4
+      AND shift_end_time > $3
+      AND deleted_at IS NULL
+) AS has_overlap;
+
 -- name: DeleteShiftAssignment :exec
 UPDATE shift_assignments SET deleted_at = now() WHERE id = $1;

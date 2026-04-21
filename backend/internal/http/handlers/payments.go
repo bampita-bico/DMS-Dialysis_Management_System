@@ -132,7 +132,7 @@ func (h *PaymentsHandler) Create(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create payment", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create payment"})
 		return
 	}
 

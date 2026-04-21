@@ -98,7 +98,7 @@ func (h *LeaveRecordsHandler) Create(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create leave request", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create leave request"})
 		return
 	}
 

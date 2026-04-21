@@ -9,6 +9,9 @@ backend/main
 # Environment
 .env
 backend/.env
+backend/.env.local
+backend/.env.remote
+backend/.env.supabase
 
 # Debug/test output files
 *.txt
@@ -30,3 +33,4 @@ flutter/**/pubspec.lock
 
 # Legacy exports
 legacy/**/*.db
+.aider*

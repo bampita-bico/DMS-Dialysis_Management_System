@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -28,6 +29,8 @@ func AuditMiddleware(pool *pgxpool.Pool) gin.HandlerFunc {
 		hospitalID, _ := c.Get(CtxHospitalID)
 		userID, _ := c.Get(CtxUserID)
 		requestID, _ := c.Get("request_id")
+		clientIP := c.ClientIP()
+		userAgent := c.Request.UserAgent()
 
 		// Read request body
 		var requestBody []byte
@@ -48,7 +51,8 @@ func AuditMiddleware(pool *pgxpool.Pool) gin.HandlerFunc {
 
 		// After request completes, write audit log asynchronously
 		go func() {
-			ctx := c.Request.Context()
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			defer cancel()
 
 			var newData map[string]interface{}
 			if len(requestBody) > 0 {
@@ -68,8 +72,8 @@ func AuditMiddleware(pool *pgxpool.Pool) gin.HandlerFunc {
 				tableName,
 				recordID,
 				newData,
-				c.ClientIP(),
-				c.Request.UserAgent(),
+				clientIP,
+				userAgent,
 				time.Now(),
 			)
 

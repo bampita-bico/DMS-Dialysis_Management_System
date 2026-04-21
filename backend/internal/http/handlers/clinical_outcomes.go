@@ -151,7 +151,7 @@ func (h *ClinicalOutcomesHandler) Create(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create clinical outcome", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create clinical outcome"})
 		return
 	}
 

@@ -116,6 +116,33 @@ func (q *Queries) GetUserByEmail(ctx context.Context, arg GetUserByEmailParams) 
 	return i, err
 }
 
+const getUserForLogin = `-- name: GetUserForLogin :one
+SELECT id, hospital_id, email, phone, password_hash, full_name, is_active, is_verified, last_login_at, password_reset_at, created_at, updated_at, deleted_at FROM users
+WHERE email = $1 AND deleted_at IS NULL
+LIMIT 1
+`
+
+func (q *Queries) GetUserForLogin(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserForLogin, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.HospitalID,
+		&i.Email,
+		&i.Phone,
+		&i.PasswordHash,
+		&i.FullName,
+		&i.IsActive,
+		&i.IsVerified,
+		&i.LastLoginAt,
+		&i.PasswordResetAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const listActiveUsers = `-- name: ListActiveUsers :many
 SELECT id, hospital_id, email, phone, password_hash, full_name, is_active, is_verified, last_login_at, password_reset_at, created_at, updated_at, deleted_at FROM users
 WHERE hospital_id = $1 AND is_active = true AND deleted_at IS NULL

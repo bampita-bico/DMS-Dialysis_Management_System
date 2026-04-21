@@ -30,5 +30,9 @@ SET alert_acknowledged_by = $2, alert_acknowledged_at = now()
 WHERE id = $1 AND deleted_at IS NULL
 RETURNING *;
 
+-- name: CountVitalsBySession :one
+SELECT COUNT(*) AS vital_count FROM session_vitals
+WHERE session_id = $1 AND deleted_at IS NULL;
+
 -- name: DeleteSessionVital :exec
 UPDATE session_vitals SET deleted_at = now() WHERE id = $1;

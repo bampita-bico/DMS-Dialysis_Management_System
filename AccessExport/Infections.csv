@@ -1,6 +1,0 @@
-"InfectionID","PatientID","Diagnosis","SourceOfInfection","SynptomsOnset","DateOfDiagnosis","Organism","Severity","TreatmentStarted","FirstDoseMedication","IsBlackWaterFever","ParasitemiaLevel","Is_AKI_Related","AcuteCo-Infections","IsolationRequired"
-1,1,,,,,,,,,0,,0,,0
-2,1,,,,,,,,,0,,0,,0
-3,17,"Malaria","Community Acquired",07-Mar-2026 0:00:00,10-Mar-2026 0:00:00,,"Severe/ Complicated",07-Mar-2026 0:00:00,"Artether/Lumafantrine (Coartem)",1,,1,,0
-4,21,"Other","Community Acquired",,,,"Severe/ Complicated",,,0,,0,,0
-5,27,"Malaria","Community Acquired",15-Oct-2026 0:00:00,29-Oct-2025 0:00:00,,"Severe/ Complicated",29-Oct-2025 0:00:00,"Ceftriaxone;IV Artesunate;Other",0,"3+",1,,0

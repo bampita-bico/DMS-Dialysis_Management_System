@@ -87,7 +87,7 @@ func (h *MedicalHistoryHandler) CreateDiagnosis(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create diagnosis", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create diagnosis"})
 		return
 	}
 
@@ -259,7 +259,7 @@ func (h *MedicalHistoryHandler) CreateComorbidity(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create comorbidity", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create comorbidity"})
 		return
 	}
 
@@ -440,7 +440,7 @@ func (h *MedicalHistoryHandler) CreateAllergy(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create allergy", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create allergy"})
 		return
 	}
 

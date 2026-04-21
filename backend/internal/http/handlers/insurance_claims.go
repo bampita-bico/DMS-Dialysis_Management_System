@@ -103,7 +103,7 @@ func (h *InsuranceClaimsHandler) Create(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create insurance claim", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create insurance claim"})
 		return
 	}
 

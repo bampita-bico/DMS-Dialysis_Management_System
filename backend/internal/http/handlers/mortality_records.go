@@ -126,7 +126,7 @@ func (h *MortalityRecordsHandler) Create(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create mortality record", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create mortality record"})
 		return
 	}
 

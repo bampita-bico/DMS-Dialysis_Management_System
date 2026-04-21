@@ -61,6 +61,18 @@ func (q *Queries) AcknowledgeAlert(ctx context.Context, arg AcknowledgeAlertPara
 	return i, err
 }
 
+const countVitalsBySession = `-- name: CountVitalsBySession :one
+SELECT COUNT(*) AS vital_count FROM session_vitals
+WHERE session_id = $1 AND deleted_at IS NULL
+`
+
+func (q *Queries) CountVitalsBySession(ctx context.Context, sessionID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countVitalsBySession, sessionID)
+	var vital_count int64
+	err := row.Scan(&vital_count)
+	return vital_count, err
+}
+
 const createSessionVital = `-- name: CreateSessionVital :one
 INSERT INTO session_vitals (
     hospital_id, session_id, patient_id, recorded_by, recorded_at,

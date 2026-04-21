@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,14 +12,14 @@ import (
 func RLSMiddleware(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get hospital_id and user_id from JWT claims (set by JWTAuth middleware)
-		hospitalID, exists := c.Get(CtxHospitalID)
-		if !exists {
+		hospitalID := c.GetString(CtxHospitalID)
+		if hospitalID == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing hospital_id in context"})
 			return
 		}
 
-		userID, exists := c.Get(CtxUserID)
-		if !exists {
+		userID := c.GetString(CtxUserID)
+		if userID == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing user_id in context"})
 			return
 		}
@@ -33,12 +32,13 @@ func RLSMiddleware(pool *pgxpool.Pool) gin.HandlerFunc {
 		}
 		defer conn.Release()
 
-		// Set PostgreSQL session variables for RLS
-		// These are used by RLS policies: current_setting('app.current_hospital_id')::UUID
+		// Set PostgreSQL session variables for RLS.
+		// NOTE: Both key variants are set for backward compatibility across migrations.
 		_, err = conn.Exec(
-			context.Background(),
+			c.Request.Context(),
 			`SELECT
 				set_config('app.current_hospital_id', $1, false),
+				set_config('app.hospital_id', $1, false),
 				set_config('app.current_user_id', $2, false)`,
 			hospitalID,
 			userID,

@@ -124,6 +124,37 @@ func (q *Queries) GetPrescriptionItem(ctx context.Context, id uuid.UUID) (Prescr
 	return i, err
 }
 
+const listActiveMedicationIDsForPatient = `-- name: ListActiveMedicationIDsForPatient :many
+SELECT DISTINCT pi.medication_id
+FROM prescription_items pi
+JOIN prescriptions p ON p.id = pi.prescription_id
+WHERE p.patient_id = $1
+  AND p.status = 'active'
+  AND p.deleted_at IS NULL
+  AND pi.deleted_at IS NULL
+  AND (pi.end_date IS NULL OR pi.end_date >= CURRENT_DATE)
+`
+
+func (q *Queries) ListActiveMedicationIDsForPatient(ctx context.Context, patientID uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, listActiveMedicationIDsForPatient, patientID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var medication_id uuid.UUID
+		if err := rows.Scan(&medication_id); err != nil {
+			return nil, err
+		}
+		items = append(items, medication_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPrescriptionItemsByPrescription = `-- name: ListPrescriptionItemsByPrescription :many
 SELECT id, hospital_id, prescription_id, medication_id, dose, frequency, route, duration_days, quantity_prescribed, quantity_dispensed, instructions, start_date, end_date, is_prn, prn_indication, is_stat, notes, created_at, updated_at, deleted_at FROM prescription_items
 WHERE prescription_id = $1 AND deleted_at IS NULL
