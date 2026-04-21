@@ -147,6 +147,29 @@ func (q *Queries) GetLeaveRecord(ctx context.Context, id uuid.UUID) (LeaveRecord
 	return i, err
 }
 
+const hasApprovedLeaveOnDate = `-- name: HasApprovedLeaveOnDate :one
+SELECT EXISTS(
+    SELECT 1 FROM leave_records
+    WHERE staff_id = $1
+      AND start_date <= $2
+      AND end_date >= $2
+      AND status = 'approved'
+      AND deleted_at IS NULL
+) AS on_leave
+`
+
+type HasApprovedLeaveOnDateParams struct {
+	StaffID   uuid.UUID   `json:"staff_id"`
+	StartDate pgtype.Date `json:"start_date"`
+}
+
+func (q *Queries) HasApprovedLeaveOnDate(ctx context.Context, arg HasApprovedLeaveOnDateParams) (bool, error) {
+	row := q.db.QueryRow(ctx, hasApprovedLeaveOnDate, arg.StaffID, arg.StartDate)
+	var on_leave bool
+	err := row.Scan(&on_leave)
+	return on_leave, err
+}
+
 const listLeaveByDateRange = `-- name: ListLeaveByDateRange :many
 SELECT id, hospital_id, staff_id, leave_type, start_date, end_date, days_requested, days_approved, reason, requested_at, approved_by, approved_at, rejection_reason, status, relief_staff_id, notes, created_at, updated_at, deleted_at FROM leave_records
 WHERE hospital_id = $1

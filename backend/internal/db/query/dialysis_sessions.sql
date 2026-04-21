@@ -58,5 +58,13 @@ SET status = 'aborted', actual_end_time = now(), aborted_reason = $2
 WHERE id = $1 AND deleted_at IS NULL
 RETURNING *;
 
+-- name: HasActiveSessionForPatient :one
+SELECT EXISTS(
+    SELECT 1 FROM dialysis_sessions
+    WHERE patient_id = $1
+      AND status = 'in_progress'
+      AND deleted_at IS NULL
+) AS has_active;
+
 -- name: DeleteDialysisSession :exec
 UPDATE dialysis_sessions SET deleted_at = now() WHERE id = $1;

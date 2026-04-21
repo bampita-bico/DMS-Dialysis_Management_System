@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"context"
+	"fmt"
+	"math/big"
 	"net/http"
 	"time"
 
@@ -9,6 +12,7 @@ import (
 	"github.com/dmsafrica/dms/internal/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
@@ -149,12 +153,127 @@ func (h *LabResultsHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Auto-generate critical alert if numeric value is outside critical thresholds
+	var criticalAlert *sqlc.LabCriticalAlert
+	if req.ValueNumeric != nil {
+		criticalAlert = h.checkAndCreateCriticalAlert(ctx, queries, labResult, uuid.MustParse(hospitalID))
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to commit transaction"})
 		return
 	}
 
+	// Return the result with alert info if one was created
+	if criticalAlert != nil {
+		c.JSON(http.StatusCreated, gin.H{
+			"lab_result":     labResult,
+			"critical_alert": criticalAlert,
+		})
+		return
+	}
 	c.JSON(http.StatusCreated, labResult)
+}
+
+// checkAndCreateCriticalAlert compares a numeric lab result against reference range
+// critical thresholds and auto-generates a critical alert if violated.
+func (h *LabResultsHandler) checkAndCreateCriticalAlert(
+	ctx context.Context, queries *sqlc.Queries,
+	result sqlc.LabResult, hospitalID uuid.UUID,
+) *sqlc.LabCriticalAlert {
+	// Get the order item to find the test_id and order_id
+	orderItem, err := queries.GetLabOrderItem(ctx, result.OrderItemID)
+	if err != nil {
+		return nil
+	}
+
+	// Get the order to find the patient_id
+	order, err := queries.GetLabOrder(ctx, orderItem.OrderID)
+	if err != nil {
+		return nil
+	}
+
+	// Get the test catalog entry for the name
+	test, err := queries.GetLabTest(ctx, orderItem.TestID)
+	if err != nil {
+		return nil
+	}
+
+	// Get the default reference range for this test
+	refRange, err := queries.GetDefaultReferenceRange(ctx, orderItem.TestID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil // no reference range defined — can't evaluate
+		}
+		return nil
+	}
+
+	// Compare the numeric value against critical thresholds
+	if !result.ValueNumeric.Valid {
+		return nil
+	}
+
+	resultVal := numericToDecimal(result.ValueNumeric)
+	if resultVal == nil {
+		return nil
+	}
+
+	var severity string
+	isCritical := false
+
+	if refRange.CriticalLow.Valid {
+		critLow := numericToDecimal(refRange.CriticalLow)
+		if critLow != nil && resultVal.LessThan(*critLow) {
+			severity = "critical_low"
+			isCritical = true
+		}
+	}
+
+	if !isCritical && refRange.CriticalHigh.Valid {
+		critHigh := numericToDecimal(refRange.CriticalHigh)
+		if critHigh != nil && resultVal.GreaterThan(*critHigh) {
+			severity = "critical_high"
+			isCritical = true
+		}
+	}
+
+	if !isCritical {
+		return nil
+	}
+
+	// Build reference range string for the alert
+	refRangeStr := pgtype.Text{}
+	if refRange.ReferenceText.Valid {
+		refRangeStr = refRange.ReferenceText
+	}
+
+	alert, err := queries.CreateLabCriticalAlert(ctx, sqlc.CreateLabCriticalAlertParams{
+		HospitalID:     hospitalID,
+		ResultID:       result.ID,
+		PatientID:      order.PatientID,
+		TestName:       test.Name,
+		CriticalValue:  fmt.Sprintf("%s", resultVal.String()),
+		ReferenceRange: refRangeStr,
+		Severity:       severity,
+	})
+	if err != nil {
+		return nil
+	}
+
+	return &alert
+}
+
+// numericToDecimal converts a pgtype.Numeric to a shopspring decimal.
+func numericToDecimal(n pgtype.Numeric) *decimal.Decimal {
+	if !n.Valid || n.NaN {
+		return nil
+	}
+	bigInt := n.Int
+	if bigInt == nil {
+		bigInt = big.NewInt(0)
+	}
+	d := decimal.NewFromBigInt(bigInt, n.Exp)
+	return &d
 }
 
 // Get retrieves a lab result by ID

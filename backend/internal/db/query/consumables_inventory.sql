@@ -37,5 +37,24 @@ SET quantity_current = $2, quantity_available = $2 - quantity_reserved
 WHERE id = $1 AND deleted_at IS NULL
 RETURNING *;
 
+-- name: GetAvailableInventoryBatch :one
+SELECT * FROM consumables_inventory
+WHERE consumable_id = $1
+  AND hospital_id = $2
+  AND quantity_available > 0
+  AND deleted_at IS NULL
+ORDER BY expiry_date ASC NULLS LAST
+LIMIT 1;
+
+-- name: DeductInventory :one
+UPDATE consumables_inventory
+SET quantity_current = quantity_current - $2,
+    quantity_available = quantity_available - $2,
+    is_low_stock = CASE WHEN (quantity_current - $2) <= (
+        SELECT COALESCE(c.min_stock_level, 0) FROM consumables c WHERE c.id = consumables_inventory.consumable_id
+    ) THEN TRUE ELSE FALSE END
+WHERE consumables_inventory.id = $1 AND quantity_available >= $2 AND deleted_at IS NULL
+RETURNING *;
+
 -- name: DeleteConsumablesInventory :exec
 UPDATE consumables_inventory SET deleted_at = now() WHERE id = $1;

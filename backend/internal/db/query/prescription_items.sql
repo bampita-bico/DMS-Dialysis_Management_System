@@ -20,5 +20,15 @@ SET quantity_dispensed = $2
 WHERE id = $1 AND deleted_at IS NULL
 RETURNING *;
 
+-- name: ListActiveMedicationIDsForPatient :many
+SELECT DISTINCT pi.medication_id
+FROM prescription_items pi
+JOIN prescriptions p ON p.id = pi.prescription_id
+WHERE p.patient_id = $1
+  AND p.status = 'active'
+  AND p.deleted_at IS NULL
+  AND pi.deleted_at IS NULL
+  AND (pi.end_date IS NULL OR pi.end_date >= CURRENT_DATE);
+
 -- name: DeletePrescriptionItem :exec
 UPDATE prescription_items SET deleted_at = now() WHERE id = $1;

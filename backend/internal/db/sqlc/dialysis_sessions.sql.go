@@ -271,6 +271,22 @@ func (q *Queries) GetDialysisSession(ctx context.Context, id uuid.UUID) (Dialysi
 	return i, err
 }
 
+const hasActiveSessionForPatient = `-- name: HasActiveSessionForPatient :one
+SELECT EXISTS(
+    SELECT 1 FROM dialysis_sessions
+    WHERE patient_id = $1
+      AND status = 'in_progress'
+      AND deleted_at IS NULL
+) AS has_active
+`
+
+func (q *Queries) HasActiveSessionForPatient(ctx context.Context, patientID uuid.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, hasActiveSessionForPatient, patientID)
+	var has_active bool
+	err := row.Scan(&has_active)
+	return has_active, err
+}
+
 const listActiveSessions = `-- name: ListActiveSessions :many
 SELECT id, hospital_id, patient_id, schedule_id, machine_id, access_id, modality, shift, status, scheduled_date, scheduled_start_time, actual_start_time, actual_end_time, prescribed_duration_mins, actual_duration_mins, pre_weight_kg, pre_bp_systolic, pre_bp_diastolic, pre_hr, pre_temp, post_weight_kg, post_bp_systolic, post_bp_diastolic, post_hr, session_notes, aborted_reason, was_patient_reviewed, reviewed_by, primary_nurse_id, supervising_doctor_id, created_at, updated_at, deleted_at FROM dialysis_sessions
 WHERE hospital_id = $1 AND status = 'in_progress' AND deleted_at IS NULL

@@ -32,12 +32,20 @@ func Load() (Config, error) {
 	cfg.HTTPAddr = getenv("HTTP_ADDR", ":8080")
 
 	cfg.DBHost = getenv("DB_HOST", "localhost")
-	cfg.DBPort = mustInt(getenv("DB_PORT", "5432"))
+	port, err := mustInt("DB_PORT", getenv("DB_PORT", "5432"))
+	if err != nil {
+		return Config{}, err
+	}
+	cfg.DBPort = port
 	cfg.DBName = getenv("DB_NAME", "dms")
 	cfg.DBUser = getenv("DB_USER", "dms")
 	cfg.DBPassword = getenv("DB_PASSWORD", "dms_dev_password")
 	cfg.DBSSLMode = getenv("DB_SSLMODE", "disable")
-	cfg.DBMaxConns = int32(mustInt(getenv("DB_MAX_CONNS", "4")))
+	maxConns, err := mustInt("DB_MAX_CONNS", getenv("DB_MAX_CONNS", "4"))
+	if err != nil {
+		return Config{}, err
+	}
+	cfg.DBMaxConns = int32(maxConns)
 
 	cfg.JWTSecret = getenv("JWT_SECRET", "")
 	if cfg.JWTSecret == "" {
@@ -55,10 +63,10 @@ func getenv(key, def string) string {
 	return v
 }
 
-func mustInt(v string) int {
+func mustInt(key, v string) (int, error) {
 	i, err := strconv.Atoi(v)
 	if err != nil {
-		return 0
+		return 0, fmt.Errorf("invalid %s: %q", key, v)
 	}
-	return i
+	return i, nil
 }

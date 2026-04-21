@@ -15,6 +15,11 @@ SELECT * FROM users
 WHERE hospital_id = $1 AND email = $2 AND deleted_at IS NULL
 LIMIT 1;
 
+-- name: GetUserForLogin :one
+SELECT * FROM users
+WHERE email = $1 AND deleted_at IS NULL
+LIMIT 1;
+
 -- name: ListActiveUsers :many
 SELECT * FROM users
 WHERE hospital_id = $1 AND is_active = true AND deleted_at IS NULL

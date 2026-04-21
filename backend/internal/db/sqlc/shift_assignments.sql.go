@@ -196,6 +196,36 @@ func (q *Queries) GetShiftAssignment(ctx context.Context, id uuid.UUID) (ShiftAs
 	return i, err
 }
 
+const hasOverlappingShift = `-- name: HasOverlappingShift :one
+SELECT EXISTS(
+    SELECT 1 FROM shift_assignments
+    WHERE staff_id = $1
+      AND shift_date = $2
+      AND shift_start_time < $4
+      AND shift_end_time > $3
+      AND deleted_at IS NULL
+) AS has_overlap
+`
+
+type HasOverlappingShiftParams struct {
+	StaffID        uuid.UUID   `json:"staff_id"`
+	ShiftDate      pgtype.Date `json:"shift_date"`
+	ShiftEndTime   pgtype.Time `json:"shift_end_time"`
+	ShiftStartTime pgtype.Time `json:"shift_start_time"`
+}
+
+func (q *Queries) HasOverlappingShift(ctx context.Context, arg HasOverlappingShiftParams) (bool, error) {
+	row := q.db.QueryRow(ctx, hasOverlappingShift,
+		arg.StaffID,
+		arg.ShiftDate,
+		arg.ShiftEndTime,
+		arg.ShiftStartTime,
+	)
+	var has_overlap bool
+	err := row.Scan(&has_overlap)
+	return has_overlap, err
+}
+
 const listShiftsByDate = `-- name: ListShiftsByDate :many
 SELECT id, hospital_id, staff_id, shift_date, shift_type, shift_start_time, shift_end_time, machine_ids, assigned_by, clock_in_time, clock_out_time, is_confirmed, notes, created_at, updated_at, deleted_at FROM shift_assignments
 WHERE hospital_id = $1 AND shift_date = $2 AND deleted_at IS NULL

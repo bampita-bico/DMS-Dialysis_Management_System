@@ -1,2 +1,0 @@
-go: downloading golang.org/x/sys v0.28.0
-go: downloading modernc.org/memory v1.8.0

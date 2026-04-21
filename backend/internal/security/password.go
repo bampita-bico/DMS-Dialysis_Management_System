@@ -2,8 +2,12 @@ package security
 
 import "golang.org/x/crypto/bcrypt"
 
+// Use lower cost for development to speed up authentication
+// In production, increase to bcrypt.DefaultCost (10) or higher
+const bcryptCost = 4
+
 func HashPassword(password string) (string, error) {
-	b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	b, err := bcrypt.GenerateFromPassword([]byte(password), bcryptCost)
 	if err != nil {
 		return "", err
 	}

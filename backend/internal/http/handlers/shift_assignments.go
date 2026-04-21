@@ -7,6 +7,7 @@ import (
 
 	"github.com/dmsafrica/dms/internal/db/sqlc"
 	"github.com/dmsafrica/dms/internal/db/tenant"
+	apierr "github.com/dmsafrica/dms/internal/http/errors"
 	"github.com/dmsafrica/dms/internal/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -100,6 +101,55 @@ func (h *ShiftAssignmentsHandler) Create(c *gin.Context) {
 	}
 
 	queries := sqlc.New(tx)
+
+	shiftDatePg := pgtype.Date{Time: shiftDate, Valid: true}
+
+	// --- Conflict checks ---
+
+	// 1. Check for overlapping shifts for this staff member
+	// Note: SQLC param order from the SQL is $1=staff_id, $2=shift_date, $3=new_start, $4=new_end
+	// but the generated struct names ShiftEndTime=$3 and ShiftStartTime=$4
+	hasOverlap, err := queries.HasOverlappingShift(ctx, sqlc.HasOverlappingShiftParams{
+		StaffID:        staffID,
+		ShiftDate:      shiftDatePg,
+		ShiftEndTime:   shiftStartTime, // $3 = new shift start (existing.end > this)
+		ShiftStartTime: shiftEndTime,   // $4 = new shift end (existing.start < this)
+	})
+	if err != nil {
+		apierr.Internal(c, "Failed to check for shift conflicts")
+		return
+	}
+	if hasOverlap {
+		apierr.ConflictWithDetails(c, apierr.ErrShiftConflict,
+			"Staff member already has an overlapping shift on this date",
+			gin.H{
+				"staff_id":   staffID,
+				"shift_date": req.ShiftDate,
+				"start_time": req.ShiftStartTime,
+				"end_time":   req.ShiftEndTime,
+			})
+		return
+	}
+
+	// 2. Check if staff is on approved leave on the shift date
+	onLeave, err := queries.HasApprovedLeaveOnDate(ctx, sqlc.HasApprovedLeaveOnDateParams{
+		StaffID:   staffID,
+		StartDate: shiftDatePg,
+	})
+	if err != nil {
+		apierr.Internal(c, "Failed to check leave records")
+		return
+	}
+	if onLeave {
+		apierr.ConflictWithDetails(c, apierr.ErrLeaveConflict,
+			"Staff member has approved leave on this date",
+			gin.H{
+				"staff_id":   staffID,
+				"shift_date": req.ShiftDate,
+			})
+		return
+	}
+
 	shift, err := queries.CreateShiftAssignment(ctx, sqlc.CreateShiftAssignmentParams{
 		HospitalID:     hospitalID,
 		StaffID:        staffID,
@@ -113,7 +163,7 @@ func (h *ShiftAssignmentsHandler) Create(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create shift assignment", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create shift assignment"})
 		return
 	}
 

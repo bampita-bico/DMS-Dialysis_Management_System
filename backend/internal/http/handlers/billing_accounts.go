@@ -91,7 +91,7 @@ func (h *BillingAccountsHandler) Create(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create billing account", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create billing account"})
 		return
 	}
 

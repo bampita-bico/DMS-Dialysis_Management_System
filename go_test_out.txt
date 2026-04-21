@@ -1,5 +1,0 @@
-FAIL	github.com/dmsafrica/dms/cmd/api [setup failed]
-FAIL	github.com/dmsafrica/dms/internal/http/middleware [setup failed]
-FAIL	github.com/dmsafrica/dms/internal/http/routes [setup failed]
-FAIL	github.com/dmsafrica/dms/internal/http/server [setup failed]
-FAIL	github.com/dmsafrica/dms/internal/security [setup failed]

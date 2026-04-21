@@ -1,15 +1,18 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/dmsafrica/dms/internal/db/sqlc"
 	"github.com/dmsafrica/dms/internal/db/tenant"
+	apierr "github.com/dmsafrica/dms/internal/http/errors"
 	"github.com/dmsafrica/dms/internal/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -20,6 +23,76 @@ type DialysisSessionsHandler struct {
 
 func NewDialysisSessionsHandler(pool *pgxpool.Pool) *DialysisSessionsHandler {
 	return &DialysisSessionsHandler{pool: pool}
+}
+
+// preSessionSafetyCheck runs clinical safety validations before a session can be created or started.
+// Returns a list of warnings and true if the session should be blocked.
+func (h *DialysisSessionsHandler) preSessionSafetyCheck(
+	ctx context.Context, c *gin.Context, queries *sqlc.Queries,
+	patientID uuid.UUID, machineID uuid.UUID,
+) (blocked bool) {
+	// 1. Patient must have an active vascular access
+	_, err := queries.GetPrimaryAccessForPatient(ctx, patientID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			apierr.Conflict(c, apierr.ErrNoActiveAccess,
+				"Patient has no active primary vascular access. Create or activate an access site before scheduling dialysis.")
+			return true
+		}
+		apierr.Internal(c, "Failed to check vascular access")
+		return true
+	}
+
+	// 2. Patient must have a current dry weight record
+	_, err = queries.GetCurrentDryWeight(ctx, patientID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			apierr.Conflict(c, apierr.ErrNoDryWeight,
+				"Patient has no current dry weight record. Record a dry weight assessment before scheduling dialysis.")
+			return true
+		}
+		apierr.Internal(c, "Failed to check dry weight")
+		return true
+	}
+
+	// 3. Patient must not have another active (in_progress) session
+	hasActive, err := queries.HasActiveSessionForPatient(ctx, patientID)
+	if err != nil {
+		apierr.Internal(c, "Failed to check active sessions")
+		return true
+	}
+	if hasActive {
+		apierr.Conflict(c, apierr.ErrConflictingSession,
+			"Patient already has an active dialysis session in progress. Complete or abort it before starting a new one.")
+		return true
+	}
+
+	// 4. Machine must be available
+	machine, err := queries.GetDialysisMachine(ctx, machineID)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			apierr.NotFound(c, "Dialysis machine")
+			return true
+		}
+		apierr.Internal(c, "Failed to check machine status")
+		return true
+	}
+	if machine.Status != sqlc.MachineStatusAvailable {
+		apierr.ConflictWithDetails(c, apierr.ErrMachineUnavailable,
+			"Machine is not available (current status: "+string(machine.Status)+")",
+			gin.H{"machine_id": machineID, "current_status": machine.Status})
+		return true
+	}
+
+	// 5. Machine should not be overdue for maintenance
+	if machine.NextServiceDate.Valid && machine.NextServiceDate.Time.Before(time.Now()) {
+		apierr.ConflictWithDetails(c, apierr.ErrMachineMaintenanceDue,
+			"Machine is overdue for maintenance (due: "+machine.NextServiceDate.Time.Format("2006-01-02")+")",
+			gin.H{"machine_id": machineID, "next_service_date": machine.NextServiceDate.Time.Format("2006-01-02")})
+		return true
+	}
+
+	return false
 }
 
 // Create creates a new dialysis session
@@ -82,7 +155,13 @@ func (h *DialysisSessionsHandler) Create(c *gin.Context) {
 	defer tx.Rollback(ctx)
 
 	if err := tenant.SetLocalHospitalID(ctx, tx, hospitalIDStr); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to set tenant context"})
+		apierr.InternalWithCode(c, apierr.ErrTransaction, "Failed to set tenant context")
+		return
+	}
+
+	// Run pre-session safety checks
+	safetyQueries := sqlc.New(tx)
+	if blocked := h.preSessionSafetyCheck(ctx, c, safetyQueries, patientID, machineID); blocked {
 		return
 	}
 
@@ -130,8 +209,7 @@ func (h *DialysisSessionsHandler) Create(c *gin.Context) {
 		Valid:        true,
 	}
 
-	queries := sqlc.New(tx)
-	session, err := queries.CreateDialysisSession(ctx, sqlc.CreateDialysisSessionParams{
+	session, err := safetyQueries.CreateDialysisSession(ctx, sqlc.CreateDialysisSessionParams{
 		HospitalID:             hospitalID,
 		PatientID:              patientID,
 		ScheduleID:             scheduleID,
@@ -148,7 +226,7 @@ func (h *DialysisSessionsHandler) Create(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create dialysis session", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create dialysis session"})
 		return
 	}
 
@@ -406,7 +484,25 @@ func (h *DialysisSessionsHandler) Start(c *gin.Context) {
 	defer tx.Rollback(ctx)
 
 	if err := tenant.SetLocalHospitalID(ctx, tx, hospitalIDStr); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to set tenant context"})
+		apierr.InternalWithCode(c, apierr.ErrTransaction, "Failed to set tenant context")
+		return
+	}
+
+	queries := sqlc.New(tx)
+
+	// Fetch the session to get patient and machine IDs for safety checks
+	existingSession, err := queries.GetDialysisSession(ctx, id)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			apierr.NotFound(c, "Dialysis session")
+			return
+		}
+		apierr.Internal(c, "Failed to retrieve session")
+		return
+	}
+
+	// Run pre-session safety checks
+	if blocked := h.preSessionSafetyCheck(ctx, c, queries, existingSession.PatientID, existingSession.MachineID); blocked {
 		return
 	}
 
@@ -416,7 +512,6 @@ func (h *DialysisSessionsHandler) Start(c *gin.Context) {
 		preTemp.Scan(req.PreTemp)
 	}
 
-	queries := sqlc.New(tx)
 	session, err := queries.StartSession(ctx, sqlc.StartSessionParams{
 		ID:             id,
 		PreWeightKg:    preWeightKg,
@@ -477,7 +572,20 @@ func (h *DialysisSessionsHandler) Complete(c *gin.Context) {
 	defer tx.Rollback(ctx)
 
 	if err := tenant.SetLocalHospitalID(ctx, tx, hospitalIDStr); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to set tenant context"})
+		apierr.InternalWithCode(c, apierr.ErrTransaction, "Failed to set tenant context")
+		return
+	}
+
+	// Verify at least one set of vitals was recorded during the session
+	queries := sqlc.New(tx)
+	vitalCount, err := queries.CountVitalsBySession(ctx, id)
+	if err != nil {
+		apierr.Internal(c, "Failed to check session vitals")
+		return
+	}
+	if vitalCount == 0 {
+		apierr.Conflict(c, apierr.ErrNoVitalsRecorded,
+			"Cannot complete session: no intra-session vitals have been recorded. Record at least one set of vitals before completing.")
 		return
 	}
 
@@ -495,7 +603,6 @@ func (h *DialysisSessionsHandler) Complete(c *gin.Context) {
 		reviewedBy = pgtype.UUID{Bytes: userID, Valid: true}
 	}
 
-	queries := sqlc.New(tx)
 	session, err := queries.CompleteSession(ctx, sqlc.CompleteSessionParams{
 		ID:                 id,
 		ActualDurationMins: pgtype.Int4{Int32: req.ActualDurationMins, Valid: true},
@@ -508,12 +615,12 @@ func (h *DialysisSessionsHandler) Complete(c *gin.Context) {
 		SessionNotes:       pgtype.Text{String: req.SessionNotes, Valid: req.SessionNotes != ""},
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to complete session"})
+		apierr.Internal(c, "Failed to complete session")
 		return
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to commit transaction"})
+		apierr.InternalWithCode(c, apierr.ErrTransaction, "Failed to commit transaction")
 		return
 	}
 

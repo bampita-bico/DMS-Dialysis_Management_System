@@ -74,6 +74,47 @@ func (q *Queries) CreateConsumablesInventory(ctx context.Context, arg CreateCons
 	return i, err
 }
 
+const deductInventory = `-- name: DeductInventory :one
+UPDATE consumables_inventory
+SET quantity_current = quantity_current - $2,
+    quantity_available = quantity_available - $2,
+    is_low_stock = CASE WHEN (quantity_current - $2) <= (
+        SELECT COALESCE(c.min_stock_level, 0) FROM consumables c WHERE c.id = consumables_inventory.consumable_id
+    ) THEN TRUE ELSE FALSE END
+WHERE consumables_inventory.id = $1 AND quantity_available >= $2 AND deleted_at IS NULL
+RETURNING id, hospital_id, consumable_id, batch_number, quantity_current, quantity_reserved, quantity_available, unit_cost, expiry_date, received_date, supplier_name, storage_location, is_low_stock, notes, created_at, updated_at, deleted_at
+`
+
+type DeductInventoryParams struct {
+	ID              uuid.UUID `json:"id"`
+	QuantityCurrent int32     `json:"quantity_current"`
+}
+
+func (q *Queries) DeductInventory(ctx context.Context, arg DeductInventoryParams) (ConsumablesInventory, error) {
+	row := q.db.QueryRow(ctx, deductInventory, arg.ID, arg.QuantityCurrent)
+	var i ConsumablesInventory
+	err := row.Scan(
+		&i.ID,
+		&i.HospitalID,
+		&i.ConsumableID,
+		&i.BatchNumber,
+		&i.QuantityCurrent,
+		&i.QuantityReserved,
+		&i.QuantityAvailable,
+		&i.UnitCost,
+		&i.ExpiryDate,
+		&i.ReceivedDate,
+		&i.SupplierName,
+		&i.StorageLocation,
+		&i.IsLowStock,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const deleteConsumablesInventory = `-- name: DeleteConsumablesInventory :exec
 UPDATE consumables_inventory SET deleted_at = now() WHERE id = $1
 `
@@ -81,6 +122,46 @@ UPDATE consumables_inventory SET deleted_at = now() WHERE id = $1
 func (q *Queries) DeleteConsumablesInventory(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteConsumablesInventory, id)
 	return err
+}
+
+const getAvailableInventoryBatch = `-- name: GetAvailableInventoryBatch :one
+SELECT id, hospital_id, consumable_id, batch_number, quantity_current, quantity_reserved, quantity_available, unit_cost, expiry_date, received_date, supplier_name, storage_location, is_low_stock, notes, created_at, updated_at, deleted_at FROM consumables_inventory
+WHERE consumable_id = $1
+  AND hospital_id = $2
+  AND quantity_available > 0
+  AND deleted_at IS NULL
+ORDER BY expiry_date ASC NULLS LAST
+LIMIT 1
+`
+
+type GetAvailableInventoryBatchParams struct {
+	ConsumableID uuid.UUID `json:"consumable_id"`
+	HospitalID   uuid.UUID `json:"hospital_id"`
+}
+
+func (q *Queries) GetAvailableInventoryBatch(ctx context.Context, arg GetAvailableInventoryBatchParams) (ConsumablesInventory, error) {
+	row := q.db.QueryRow(ctx, getAvailableInventoryBatch, arg.ConsumableID, arg.HospitalID)
+	var i ConsumablesInventory
+	err := row.Scan(
+		&i.ID,
+		&i.HospitalID,
+		&i.ConsumableID,
+		&i.BatchNumber,
+		&i.QuantityCurrent,
+		&i.QuantityReserved,
+		&i.QuantityAvailable,
+		&i.UnitCost,
+		&i.ExpiryDate,
+		&i.ReceivedDate,
+		&i.SupplierName,
+		&i.StorageLocation,
+		&i.IsLowStock,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
 }
 
 const getConsumablesInventory = `-- name: GetConsumablesInventory :one

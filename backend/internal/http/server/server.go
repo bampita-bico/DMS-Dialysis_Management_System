@@ -8,6 +8,7 @@ import (
 	"github.com/dmsafrica/dms/internal/http/middleware"
 	"github.com/dmsafrica/dms/internal/http/routes"
 	"github.com/dmsafrica/dms/internal/security"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -17,6 +18,15 @@ func New(cfg config.Config, pool *pgxpool.Pool) *http.Server {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(middleware.RequestID())
+
+	// Add CORS middleware for frontend
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	jwtSvc := security.NewJWTService(cfg.JWTSecret)
 	routes.Register(r, jwtSvc, pool)
