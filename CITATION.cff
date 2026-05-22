@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+title: "Dialysis Management System (DMS)"
+message: "Cite this software using the metadata from this file."
+type: software
+authors:
+  - family-names: "Mujjabi"
+    given-names: "Steve Bico"
+    orcid: "https://orcid.org/0009-0001-0556-5516"
+repository-code: "https://github.com/bampita-bico/DMS-Dialysis_Management_System"
+abstract: "A multi-tenant dialysis center management system for renal care operations, clinical workflows, billing, inventory, staff management, outcomes reporting, audit trails, and offline-first sync support."
+keywords:
+  - dialysis management
+  - renal care
+  - nephrology
+  - health informatics
+  - hospital management system
+  - electronic medical records
+  - clinical operations
+  - multi-tenant healthcare
+  - PostgreSQL row-level security
+  - Go
+  - React
+  - Uganda healthcare
+  - Africa healthcare
+  - laboratory information systems
+  - pharmacy management
+  - medical billing
+  - clinical outcomes
+  - offline-first healthcare
+  - audit trails
+  - healthcare software
+version: "1.0.0"
+date-released: "2026-05-22"

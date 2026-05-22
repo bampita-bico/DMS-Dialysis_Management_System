@@ -1,0 +1,42 @@
+{
+  "title": "Dialysis Management System (DMS)",
+  "upload_type": "software",
+  "description": "A multi-tenant dialysis center management system for patient records, dialysis sessions, laboratory workflows, pharmacy, inventory, equipment, billing, staff operations, outcomes reporting, audit trails, and offline-first sync support.",
+  "creators": [
+    {
+      "name": "Mujjabi, Steve Bico",
+      "orcid": "0009-0001-0556-5516"
+    }
+  ],
+  "keywords": [
+    "dialysis management",
+    "renal care",
+    "nephrology",
+    "health informatics",
+    "hospital management system",
+    "electronic medical records",
+    "clinical operations",
+    "multi-tenant healthcare",
+    "PostgreSQL row-level security",
+    "Go",
+    "React",
+    "Uganda healthcare",
+    "Africa healthcare",
+    "laboratory information systems",
+    "pharmacy management",
+    "medical billing",
+    "clinical outcomes",
+    "offline-first healthcare",
+    "audit trails",
+    "healthcare software"
+  ],
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/bampita-bico/DMS-Dialysis_Management_System",
+      "relation": "isSupplementTo",
+      "resource_type": "software",
+      "scheme": "url"
+    }
+  ]
+}
