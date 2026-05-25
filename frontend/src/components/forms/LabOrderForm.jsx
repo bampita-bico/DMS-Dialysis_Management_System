@@ -67,7 +67,9 @@ export default function LabOrderForm({ onSuccess, onCancel }) {
         priority: formData.priority,
         clinical_notes: formData.clinical_notes,
         diagnosis_code: formData.diagnosis_code,
+        tests: formData.selected_tests,
         status: 'pending',
+        order_status: 'pending',
         order_date: new Date().toISOString().split('T')[0],
         order_time: new Date().toLocaleTimeString('en-GB', { hour12: false })
       };

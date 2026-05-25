@@ -1,6 +1,6 @@
 #!/bin/bash
 # DMS Quick Start Script
-# Run this after configuring backend/.env with Supabase credentials
+# Run this after configuring backend/.env for your local or remote database.
 
 set -e
 
@@ -13,11 +13,11 @@ echo ""
 if [ ! -f "backend/.env" ]; then
   echo "❌ Error: backend/.env not found!"
   echo ""
-  echo "📝 Please create backend/.env with your Supabase credentials:"
+  echo "📝 Please create backend/.env with your database credentials:"
   echo "   cp backend/.env.example backend/.env"
   echo "   nano backend/.env"
   echo ""
-  echo "See SUPABASE_SETUP.md for detailed instructions"
+  echo "See README_FIRST.md for local startup and DEPLOYMENT_MODEL.md for production deployment."
   exit 1
 fi
 
@@ -106,7 +106,7 @@ echo ""
 echo "📚 Quick Start Guide:"
 echo "   1. Login with your credentials"
 echo "   2. Go to Settings → Toggle modules"
-echo "   3. Import patient data (see SUPABASE_SETUP.md)"
+echo "   3. Load seed/reference data as needed (see backend/seeds/README.md)"
 echo "   4. Create test patient"
 echo "   5. Test offline mode (DevTools → Network → Offline)"
 echo ""

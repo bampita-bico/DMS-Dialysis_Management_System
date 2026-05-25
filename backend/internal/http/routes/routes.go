@@ -14,6 +14,7 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 	// Initialize handlers
 	hospitalsHandler := handlers.NewHospitalsHandler(pool)
 	usersHandler := handlers.NewUsersHandler(pool)
+	rolesHandler := handlers.NewRolesHandler(pool)
 	subscriptionHandler := handlers.NewSubscriptionPlansHandler(pool)
 	patientsHandler := handlers.NewPatientsHandler(pool)
 	medicalHistoryHandler := handlers.NewMedicalHistoryHandler(pool)
@@ -45,6 +46,7 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 	labResultsHandler := handlers.NewLabResultsHandler(pool)
 	labCriticalAlertsHandler := handlers.NewLabCriticalAlertsHandler(pool)
 	dashboardHandler := handlers.NewDashboardHandler(pool)
+	clinicalTrackingHandler := handlers.NewClinicalTrackingHandler(pool)
 	authHandler := handlers.NewAuthHandler(pool, jwtSvc)
 	syncHandler := handlers.NewSyncHandler(pool)
 
@@ -67,33 +69,40 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 		// Dashboard
 		auth.GET("/dashboard/stats", dashboardHandler.GetStats)
 
-		admin := auth.Group("")
-		admin.Use(middleware.AdminOnly(pool))
+		platformAdmin := auth.Group("")
+		platformAdmin.Use(middleware.PlatformAdminOnly(pool))
 
 		// Hospital management endpoints
-		admin.POST("/hospitals", hospitalsHandler.Create)
-		admin.GET("/hospitals", hospitalsHandler.List)
-		admin.GET("/hospitals/:id", hospitalsHandler.Get)
-		admin.PATCH("/hospitals/:id", hospitalsHandler.Update)
-		admin.DELETE("/hospitals/:id", hospitalsHandler.Delete)
+		platformAdmin.POST("/hospitals", hospitalsHandler.Create)
+		platformAdmin.GET("/hospitals", hospitalsHandler.List)
+		platformAdmin.GET("/hospitals/:id", hospitalsHandler.Get)
+		platformAdmin.PATCH("/hospitals/:id", hospitalsHandler.Update)
+		platformAdmin.DELETE("/hospitals/:id", hospitalsHandler.Delete)
 
 		// User management endpoints
-		admin.POST("/users", usersHandler.Create)
-		admin.GET("/users", usersHandler.List)
-		admin.GET("/users/:id", usersHandler.Get)
-		admin.PATCH("/users/:id", usersHandler.Update)
-		admin.DELETE("/users/:id", usersHandler.Delete)
+		platformAdmin.POST("/users", usersHandler.Create)
+		platformAdmin.GET("/users", usersHandler.List)
+		platformAdmin.GET("/users/:id", usersHandler.Get)
+		platformAdmin.PATCH("/users/:id", usersHandler.Update)
+		platformAdmin.PATCH("/users/:id/password", usersHandler.ResetPassword)
+		platformAdmin.DELETE("/users/:id", usersHandler.Delete)
+		platformAdmin.GET("/users/:id/roles", rolesHandler.ListUserRoles)
+		platformAdmin.POST("/users/:id/roles", rolesHandler.AssignUserRole)
+		platformAdmin.DELETE("/users/:id/roles/:role_id", rolesHandler.RevokeUserRole)
+		platformAdmin.GET("/roles", rolesHandler.List)
 
 		// Subscription management endpoints
 		auth.GET("/subscription/plan", subscriptionHandler.GetCurrentPlan)
-		admin.PUT("/subscription/plan", subscriptionHandler.UpdatePlan)
-		admin.PUT("/subscription/modules", subscriptionHandler.UpdateModules)
+		platformAdmin.PUT("/subscription/plan", subscriptionHandler.UpdatePlan)
+		platformAdmin.PUT("/subscription/modules", subscriptionHandler.UpdateModules)
 		auth.GET("/subscription/plans", subscriptionHandler.ListPlans)
 
 		// Patient endpoints
 		auth.POST("/patients", patientsHandler.Create)
 		auth.GET("/patients", patientsHandler.List)
 		auth.GET("/patients/search", patientsHandler.Search)
+		auth.PATCH("/patients/:id", patientsHandler.Update)
+		auth.GET("/patients/:id/fhir-summary", clinicalTrackingHandler.GetPatientFHIRSummary)
 
 		// Patient Medical History - Diagnoses
 		auth.POST("/patients/:id/diagnoses", medicalHistoryHandler.CreateDiagnosis)
@@ -131,6 +140,7 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 
 		// Dialysis Sessions (enhanced) endpoints
 		auth.POST("/dialysis-sessions", dialysisSessionsHandler.Create)
+		auth.GET("/dialysis-sessions", dialysisSessionsHandler.List)
 		auth.GET("/dialysis-sessions/:id", dialysisSessionsHandler.Get)
 		auth.GET("/patients/:id/dialysis-sessions", dialysisSessionsHandler.ListByPatient)
 		auth.GET("/dialysis-sessions/date/:scheduled_date", dialysisSessionsHandler.ListByDate)
@@ -160,8 +170,9 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 
 		// Lab endpoints
 		auth.POST("/lab/orders", labOrdersHandler.CreateOrder)
-		auth.GET("/lab/orders/:id", labOrdersHandler.GetOrder)
+		auth.GET("/lab/orders", labOrdersHandler.ListOrders)
 		auth.GET("/lab/orders/pending", labOrdersHandler.ListPendingOrders)
+		auth.GET("/lab/orders/:id", labOrdersHandler.GetOrder)
 		auth.POST("/lab/orders/items/:item_id/collect", labOrdersHandler.CollectSpecimen)
 		auth.POST("/lab/orders/items/:item_id/results", labOrdersHandler.AddResult)
 		auth.POST("/lab/results/:id/verify", labOrdersHandler.VerifyResult)
@@ -193,6 +204,16 @@ func Register(r *gin.Engine, jwtSvc *security.JWTService, pool *pgxpool.Pool) {
 		auth.POST("/lab-critical-alerts/:id/acknowledge", labCriticalAlertsHandler.Acknowledge)
 		auth.POST("/lab-critical-alerts/:id/notify-doctor", labCriticalAlertsHandler.NotifyDoctor)
 		auth.DELETE("/lab-critical-alerts/:id", labCriticalAlertsHandler.Delete)
+
+		// Consultant clinical tracking and interoperability endpoints
+		auth.GET("/clinical-command-center/summary", clinicalTrackingHandler.GetCommandCenterSummary)
+		auth.GET("/clinical-tracking/:entity", clinicalTrackingHandler.ListEntity)
+		auth.POST("/clinical-tracking/:entity", clinicalTrackingHandler.CreateEntity)
+		auth.GET("/clinical-tracking/:entity/:id", clinicalTrackingHandler.GetEntity)
+		auth.PATCH("/clinical-tracking/:entity/:id", clinicalTrackingHandler.UpdateEntity)
+		auth.DELETE("/clinical-tracking/:entity/:id", clinicalTrackingHandler.DeleteEntity)
+		auth.POST("/clinical-alerts/:id/acknowledge", clinicalTrackingHandler.AcknowledgeClinicalAlert)
+		auth.POST("/session-safety-checks/:id/override", clinicalTrackingHandler.OverrideSafetyCheck)
 
 		// Imaging endpoints
 		auth.POST("/imaging/orders", imagingHandler.CreateOrder)

@@ -20,6 +20,22 @@ export const authService = {
     return userStr ? JSON.parse(userStr) : null;
   },
 
+  hasRole(roleName) {
+    const user = this.getCurrentUser();
+    const roles = user?.role_names || [];
+    return roles.some(role => String(role).toLowerCase() === String(roleName).toLowerCase());
+  },
+
+  isHospitalAdmin() {
+    const user = this.getCurrentUser();
+    return Boolean(user?.is_hospital_admin || user?.is_admin || this.hasRole('admin') || this.hasRole('super_admin'));
+  },
+
+  isPlatformAdmin() {
+    const user = this.getCurrentUser();
+    return Boolean(user?.is_platform_admin || this.hasRole('super_admin'));
+  },
+
   isAuthenticated() {
     return !!localStorage.getItem('token');
   },

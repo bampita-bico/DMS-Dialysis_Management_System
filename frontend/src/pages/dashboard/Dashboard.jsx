@@ -1,60 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth';
 import { useModules } from '../../contexts/ModuleContext';
 import useOfflineData from '../../hooks/useOfflineData';
-import api from '../../services/api';
 import EmojiIcon from '../../components/ui/EmojiIcon';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { isModuleEnabled } = useModules();
-  const [stats, setStats] = useState({
-    todaySessions: 0,
-    activeSessions: 0,
-    pendingAlerts: 0,
-    overdueInvoices: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const user = authService.getCurrentUser();
 
   // Load real data using offline-first approach
   const today = new Date().toISOString().split('T')[0];
   const { data: todaySessions } = useOfflineData('dialysis_sessions', { date: today });
   const { data: activeSessions } = useOfflineData('dialysis_sessions', { status: 'in_progress' });
   const { data: alerts } = useOfflineData('lab_critical_alerts', { acknowledged: false });
+  const { data: clinicalAlerts } = useOfflineData('clinical_alerts');
+  const { data: safetyChecks } = useOfflineData('session_safety_checks');
   const { data: invoices } = useOfflineData('invoices', { invoice_status: 'overdue' });
 
-  useEffect(() => {
-    setUser(authService.getCurrentUser());
-    loadDashboardStats();
-  }, [todaySessions, activeSessions, alerts, invoices]);
-
-  const loadDashboardStats = () => {
-    setStats({
+  const stats = useMemo(
+    () => ({
       todaySessions: todaySessions?.length || 0,
       activeSessions: activeSessions?.length || 0,
       pendingAlerts: alerts?.length || 0,
+      clinicalRisks: (clinicalAlerts || []).filter(a => !['acknowledged', 'closed', 'resolved'].includes(a.status)).length +
+        (safetyChecks || []).filter(s => s.override_required || ['blocked', 'failed'].includes(s.check_status)).length,
       overdueInvoices: invoices?.length || 0,
-    });
-    setLoading(false);
-  };
+    }),
+    [todaySessions, activeSessions, alerts, clinicalAlerts, safetyChecks, invoices]
+  );
 
   const handleLogout = () => {
     authService.logout();
     navigate('/login');
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -93,6 +73,12 @@ export default function Dashboard() {
             </Link>
             <Link to="/sessions" className="text-gray-700 hover:text-blue-600 whitespace-nowrap">
               💉 Sessions
+            </Link>
+            <Link to="/clinical" className="text-gray-700 hover:text-blue-600 whitespace-nowrap">
+              ⚕️ Clinical
+            </Link>
+            <Link to="/reports/mortality" className="text-gray-700 hover:text-blue-600 whitespace-nowrap">
+              📄 Reports
             </Link>
             {isModuleEnabled('lab_management') && (
               <Link to="/lab" className="text-gray-700 hover:text-blue-600 whitespace-nowrap">
@@ -143,6 +129,14 @@ export default function Dashboard() {
               onClick={() => navigate('/lab')}
             />
           )}
+          <StatCard
+            title="Clinical Risks"
+            value={stats.clinicalRisks}
+            icon="⚕️"
+            color="red"
+            description="Safety gates and open alerts"
+            onClick={() => navigate('/clinical')}
+          />
           {isModuleEnabled('advanced_billing') && (
             <StatCard
               title="Overdue Invoices"
@@ -177,6 +171,16 @@ export default function Dashboard() {
                 onClick={() => navigate('/lab')}
               />
             )}
+            <QuickAction
+              icon="⚕️"
+              label="Clinical Review"
+              onClick={() => navigate('/clinical')}
+            />
+            <QuickAction
+              icon="📄"
+              label="Monthly Mortality"
+              onClick={() => navigate('/reports/mortality')}
+            />
             {isModuleEnabled('advanced_billing') && (
               <QuickAction
                 icon="📄"

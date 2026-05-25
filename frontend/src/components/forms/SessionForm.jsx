@@ -21,15 +21,21 @@ export default function SessionForm({ onSuccess, onCancel }) {
     primary_nurse_id: '',
     supervising_doctor_id: '',
     session_notes: '',
+    dialysate_sodium_meq_l: 138,
+    dialysate_potassium_meq_l: 2,
+    dialysate_calcium_meq_l: 2.5,
+    dialysate_magnesium_meq_l: 1,
+    dialysate_bicarbonate_meq_l: 35,
+    dialysate_composition_verified: true,
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const activePatients = (patients || []).filter(p => p.is_active);
-  const availableMachines = (machines || []).filter(m => m.operational_status === 'operational');
-  const nurses = (staff || []).filter(s => s.cadre === 'nurse' && s.is_active);
+  const availableMachines = (machines || []).filter(m => ['operational', 'available'].includes(m.operational_status || m.status));
+  const nurses = (staff || []).filter(s => (s.cadre === 'nurse' || s.staff_cadre === 'nurse') && s.is_active);
   const doctors = (staff || []).filter(s =>
-    (s.cadre === 'doctor' || s.cadre === 'nephrologist') && s.is_active
+    (['doctor', 'nephrologist'].includes(s.cadre) || ['doctor', 'nephrologist'].includes(s.staff_cadre)) && s.is_active
   );
 
   const handleChange = (e) => {
@@ -63,9 +69,9 @@ export default function SessionForm({ onSuccess, onCancel }) {
         patient_id: formData.patient_id,
         machine_id: formData.machine_id,
         scheduled_date: formData.scheduled_date,
-        scheduled_start_time: formData.scheduled_start_time,
+        scheduled_start_time: withSeconds(formData.scheduled_start_time),
         shift: formData.shift,
-        prescribed_duration_mins: formData.prescribed_duration_mins,
+        prescribed_duration_mins: Number(formData.prescribed_duration_mins),
         modality: formData.modality,
         status: 'scheduled',
         primary_nurse_id: formData.primary_nurse_id,
@@ -75,7 +81,23 @@ export default function SessionForm({ onSuccess, onCancel }) {
         was_patient_reviewed: false
       };
 
-      await offlineService.create('dialysis_sessions', payload, 8);
+      const session = await offlineService.create('dialysis_sessions', payload, 8);
+
+      await offlineService.create('dialysate_records', {
+        session_id: session.id,
+        patient_id: formData.patient_id,
+        hospital_id: currentUser?.hospital_id,
+        sodium_meq_l: Number(formData.dialysate_sodium_meq_l),
+        potassium_meq_l: Number(formData.dialysate_potassium_meq_l),
+        calcium_meq_l: Number(formData.dialysate_calcium_meq_l),
+        magnesium_meq_l: Number(formData.dialysate_magnesium_meq_l),
+        bicarbonate_meq_l: Number(formData.dialysate_bicarbonate_meq_l),
+        composition_verified: Boolean(formData.dialysate_composition_verified),
+        recorded_by: currentUser?.id,
+        recorded_at: new Date().toISOString(),
+        notes: 'Recorded during session scheduling.',
+      }, 8);
+
       onSuccess?.();
     } catch (error) {
       setErrors({ submit: error.message || 'Failed to schedule session' });
@@ -154,6 +176,27 @@ export default function SessionForm({ onSuccess, onCancel }) {
       <FormField label="Session Notes" name="session_notes" type="textarea"
         value={formData.session_notes} onChange={handleChange} rows={2} />
 
+      <div className="border-t border-gray-200 pt-4">
+        <h3 className="text-base font-semibold text-gray-900 mb-3">Dialysate Prescription Check</h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <FormField label="Sodium" name="dialysate_sodium_meq_l" type="number"
+            value={formData.dialysate_sodium_meq_l} onChange={handleChange} required />
+          <FormField label="Potassium" name="dialysate_potassium_meq_l" type="number"
+            value={formData.dialysate_potassium_meq_l} onChange={handleChange} step="0.1" required />
+          <FormField label="Calcium" name="dialysate_calcium_meq_l" type="number"
+            value={formData.dialysate_calcium_meq_l} onChange={handleChange} step="0.1" required />
+          <FormField label="Magnesium" name="dialysate_magnesium_meq_l" type="number"
+            value={formData.dialysate_magnesium_meq_l} onChange={handleChange} step="0.1" required />
+          <FormField label="Bicarbonate" name="dialysate_bicarbonate_meq_l" type="number"
+            value={formData.dialysate_bicarbonate_meq_l} onChange={handleChange} required />
+        </div>
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" name="dialysate_composition_verified" checked={formData.dialysate_composition_verified}
+            onChange={handleChange} className="h-4 w-4 text-sky-600 rounded" />
+          Composition verified before treatment start
+        </label>
+      </div>
+
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <button type="button" onClick={onCancel} disabled={loading}
           className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
@@ -166,4 +209,9 @@ export default function SessionForm({ onSuccess, onCancel }) {
       </div>
     </form>
   );
+}
+
+function withSeconds(value) {
+  if (!value) return value;
+  return value.length === 5 ? `${value}:00` : value;
 }

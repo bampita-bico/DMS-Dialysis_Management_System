@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import offlineService from '../services/offlineService';
 
 /**
@@ -12,12 +12,13 @@ export const useOfflineData = (entityType, filters = {}, autoRefresh = true) => 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const filterKey = JSON.stringify(filters);
 
-  const loadData = async (forceOnline = false) => {
+  const loadData = useCallback(async (forceOnline = false) => {
     try {
       setLoading(true);
       setError(null);
-      const result = await offlineService.list(entityType, filters, forceOnline);
+      const result = await offlineService.list(entityType, JSON.parse(filterKey || '{}'), forceOnline);
       setData(result);
     } catch (err) {
       console.error(`Failed to load ${entityType}:`, err);
@@ -25,10 +26,17 @@ export const useOfflineData = (entityType, filters = {}, autoRefresh = true) => 
     } finally {
       setLoading(false);
     }
-  };
+  }, [entityType, filterKey]);
 
   useEffect(() => {
-    loadData();
+    queueMicrotask(() => loadData());
+
+    const handleLocalChange = (event) => {
+      if (!event.detail?.entityType || event.detail.entityType === entityType) {
+        loadData(false);
+      }
+    };
+    window.addEventListener('dms-local-change', handleLocalChange);
 
     // Auto-refresh when coming back online
     if (autoRefresh) {
@@ -38,9 +46,14 @@ export const useOfflineData = (entityType, filters = {}, autoRefresh = true) => 
       };
 
       window.addEventListener('online', handleOnline);
-      return () => window.removeEventListener('online', handleOnline);
+      return () => {
+        window.removeEventListener('dms-local-change', handleLocalChange);
+        window.removeEventListener('online', handleOnline);
+      };
     }
-  }, [entityType, JSON.stringify(filters)]);
+
+    return () => window.removeEventListener('dms-local-change', handleLocalChange);
+  }, [autoRefresh, entityType, loadData]);
 
   return {
     data,
@@ -61,7 +74,7 @@ export const useOfflineEntity = (entityType, id) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadData = async (forceOnline = false) => {
+  const loadData = useCallback(async (forceOnline = false) => {
     if (!id) {
       setLoading(false);
       return;
@@ -78,11 +91,11 @@ export const useOfflineEntity = (entityType, id) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [entityType, id]);
 
   useEffect(() => {
-    loadData();
-  }, [entityType, id]);
+    queueMicrotask(() => loadData());
+  }, [loadData]);
 
   return {
     data,

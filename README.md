@@ -4,14 +4,15 @@ A comprehensive, multi-tenant healthcare management system for dialysis centers 
 
 ## Features
 
-- **Multi-tenant Architecture**: Secure tenant isolation using PostgreSQL Row Level Security (RLS)
+- **Multi-tenant Architecture**: Secure hospital isolation using PostgreSQL Row Level Security (RLS)
 - **Comprehensive Patient Management**: Demographics, medical history, dialysis sessions, medications
 - **Clinical Workflows**: Session management, vital signs tracking, assessments, complications
 - **Staff & Scheduling**: User management, roles, shift scheduling
 - **Equipment & Inventory**: Dialysis machines, consumables, maintenance tracking
 - **Billing & Finance**: Treatment billing, insurance claims, financial reporting
 - **Laboratory Integration**: Test orders, results tracking, trend analysis
-- **Reporting**: Clinical, operational, and financial reports
+- **Reporting & Printing**: Monthly Mortality Report (MMR), clinical reports, lab result printouts, patient history printouts
+- **Platform Administration**: Hidden `/platform` console for `super_admin` users; hospital admins use Staff Management
 
 ## Tech Stack
 
@@ -20,6 +21,19 @@ A comprehensive, multi-tenant healthcare management system for dialysis centers 
 - **Frontend**: React 19 + Vite (responsive web app)
 - **Database Tools**: sqlc (type-safe queries), goose (migrations)
 - **Authentication**: JWT-based with multi-tenant context
+
+## Recommended Production Deployment
+
+For production, use separate environments for government and private hospitals:
+
+- **Government hospitals**: one Ministry-hosted national DMS for public dialysis units.
+- **Private hospitals**: a separate private-sector DMS environment, not mixed with government data.
+- **Database model**: one shared PostgreSQL database per environment by default, with hospitals separated by `hospital_id` and RLS.
+- **Dedicated deployments**: reserve these for large private chains, special legal requirements, or performance needs.
+
+Platform administration belongs at `/platform` and should be restricted to `super_admin` users from the Ministry/DMS owner team. Individual hospitals should only use Staff Management for their own staff and roles.
+
+See [DEPLOYMENT_MODEL.md](DEPLOYMENT_MODEL.md) for the doctor-friendly deployment explanation and rollout plan.
 
 ## Prerequisites
 
@@ -67,8 +81,6 @@ go run cmd/api/main.go
 # 7. Start frontend
 cd ../frontend && npm install && npm run dev
 ```
-
-**Complete guide:** See [`FREE_SETUP.md`](FREE_SETUP.md)
 
 ### Option 2: Local Development (Docker) - For 8GB+ RAM
 
@@ -126,20 +138,26 @@ cd backend && go run cmd/api/main.go
 cd frontend && npm run dev
 ```
 
-**Complete Remote Setup Guide:** See [`REMOTE_SETUP.md`](REMOTE_SETUP.md) for:
-- VPS provisioning (DigitalOcean/Linode/Vultr)
-- PostgreSQL installation and configuration
-- Database migration
-- Automated backups
-- Troubleshooting
+For real production, follow the environment split and access model in [DEPLOYMENT_MODEL.md](DEPLOYMENT_MODEL.md).
 
 ## Demo Credentials
 
 After running migrations and loading demo data:
 
-- **Email**: `doctor@demo.com`
+### Hospital User
+
+- **Email / username**: `doctor@demo.com`
 - **Password**: `password123`
 - **Hospital**: Demo Dialysis Center (DEMO)
+
+### Platform Super Admin
+
+- **Username**: `bampita-bico`
+- **Email**: `msbico@gmail.com`
+- **Password**: local/demo secret, rotate before production
+- **Access**: `http://localhost:5173/platform`
+
+These credentials are for local/demo use only. Rotate all passwords before production.
 
 ## Project Structure
 
@@ -206,7 +224,7 @@ cd frontend && npm run build
 DMS uses **PostgreSQL Row Level Security (RLS)** for tenant isolation:
 
 1. **JWT Middleware** extracts `hospital_id` from token claims
-2. **Transaction Context** sets PostgreSQL session variable: `SET LOCAL app.hospital_id = '<uuid>'`
+2. **Transaction Context** sets PostgreSQL tenant variables such as `app.hospital_id` and `app.current_hospital_id`
 3. **RLS Policies** automatically filter all queries by tenant
 
 **Example RLS Policy:**
@@ -215,7 +233,7 @@ CREATE POLICY patients_isolation ON patients
   USING (hospital_id = dms_current_hospital_id());
 ```
 
-This ensures complete data isolation at the database level - no application-level filtering needed!
+This enforces hospital isolation at the database level and keeps normal hospital users inside their own hospital's records.
 
 ## Key Features
 
@@ -228,11 +246,15 @@ This ensures complete data isolation at the database level - no application-leve
 
 ### Administrative Modules
 - **Staff Management**: Users, roles, permissions, scheduling
+- **Platform Admin**: Hidden `/platform` page for `super_admin` users only
 - **Equipment**: Dialysis machines, beds, maintenance schedules
 - **Inventory**: Consumables, suppliers, stock tracking
 - **Billing**: Treatment billing, insurance, payments
 
 ### Reporting
+- Monthly Mortality Report (MMR) for Ministry reporting
+- Printable patient history
+- Printable lab results
 - Clinical reports (patient outcomes, treatment compliance)
 - Operational reports (session volume, equipment utilization)
 - Financial reports (revenue, outstanding payments)
@@ -328,7 +350,7 @@ docker exec -t $(docker ps -qf "name=dms-postgres") pg_dump -U dms dms > backup.
 ssh VPS_IP "pg_dump -U dms dms | gzip" > backup.sql.gz
 ```
 
-See `REMOTE_SETUP.md` for automated backup configuration.
+For production backup expectations, see [DEPLOYMENT_MODEL.md](DEPLOYMENT_MODEL.md).
 
 ## Development Workflow
 
@@ -421,13 +443,12 @@ cd tests
 - `tenant.SetLocalHospitalID()` called before queries
 - RLS policies enabled: `SELECT tablename, rowsecurity FROM pg_tables;`
 
-See `REMOTE_SETUP.md` for remote-specific troubleshooting.
-
 ## Documentation
 
-- **`CLAUDE.md`**: Complete architecture and development guide
-- **`REMOTE_SETUP.md`**: Remote PostgreSQL setup for resource-constrained machines
-- **`SYSTEM_MAP.md`**: Project memory and architecture decisions
+- **[DEPLOYMENT_MODEL.md](DEPLOYMENT_MODEL.md)**: Government/private deployment model, database decision, admin access model, rollout plan
+- **[README_FIRST.md](README_FIRST.md)**: Quick local start and first-use guide
+- **[frontend/README.md](frontend/README.md)**: Frontend development notes
+- **[backend/seeds/README.md](backend/seeds/README.md)**: Reference-data seed notes
 - **`backend/internal/db/migrations/`**: Database schema definitions
 
 ## Contributing
@@ -446,12 +467,11 @@ Proprietary - All rights reserved
 ## Support
 
 For questions or issues:
-- Review `CLAUDE.md` for architecture details
-- Check `REMOTE_SETUP.md` for deployment issues
+- Review [DEPLOYMENT_MODEL.md](DEPLOYMENT_MODEL.md) for deployment decisions
 - Review migration files for database schema
 
 ---
 
-**Status**: ✅ Backend production-ready | ⏳ Frontend in active development
+**Status**: Backend and frontend in active development; production rollout requires the checklist in [DEPLOYMENT_MODEL.md](DEPLOYMENT_MODEL.md)
 
-**Last Updated**: 2026-04-11
+**Last Updated**: 2026-05-25

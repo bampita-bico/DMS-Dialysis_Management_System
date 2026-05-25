@@ -9,10 +9,13 @@ import Dashboard from './pages/dashboard/Dashboard';
 import PatientsList from './pages/patients/PatientsList';
 import PatientDetails from './pages/patients/PatientDetails';
 import SessionSchedule from './pages/sessions/SessionSchedule';
+import ClinicalCommandCenter from './pages/clinical/ClinicalCommandCenter';
 import LabResults from './pages/lab/LabResults';
 import Invoices from './pages/billing/Invoices';
 import StaffManagement from './pages/staff/StaffManagement';
 import SettingsPage from './pages/settings/SettingsPage';
+import AdminPage from './pages/admin/AdminPage';
+import MortalityReport from './pages/reports/MortalityReport';
 import Layout from './components/layout/Layout';
 
 function ProtectedRoute({ children }) {
@@ -20,6 +23,14 @@ function ProtectedRoute({ children }) {
     <Layout>{children}</Layout>
   ) : (
     <Navigate to="/login" replace />
+  );
+}
+
+function PlatformAdminRoute({ children }) {
+  return authService.isAuthenticated() && authService.isPlatformAdmin() ? (
+    <Layout>{children}</Layout>
+  ) : (
+    <Navigate to="/dashboard" replace />
   );
 }
 
@@ -77,6 +88,14 @@ function AppContent() {
           }
         />
         <Route
+          path="/clinical"
+          element={
+            <ProtectedRoute>
+              <ClinicalCommandCenter />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/lab"
           element={
             <ProtectedRoute>
@@ -101,11 +120,39 @@ function AppContent() {
           }
         />
         <Route
+          path="/reports"
+          element={<Navigate to="/reports/mortality" replace />}
+        />
+        <Route
+          path="/reports/mortality"
+          element={
+            <ProtectedRoute>
+              <MortalityReport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/settings"
           element={
             <ProtectedRoute>
               <SettingsPage />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/platform"
+          element={
+            <PlatformAdminRoute>
+              <AdminPage />
+            </PlatformAdminRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <PlatformAdminRoute>
+              <Navigate to="/platform" replace />
+            </PlatformAdminRoute>
           }
         />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

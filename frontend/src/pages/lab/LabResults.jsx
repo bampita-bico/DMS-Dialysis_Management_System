@@ -1,46 +1,54 @@
 import { useState } from 'react';
 import useOfflineData from '../../hooks/useOfflineData';
-import offlineService from '../../services/offlineService';
 import FormModal from '../../components/forms/FormModal';
 import LabOrderForm from '../../components/forms/LabOrderForm';
+import db from '../../db/schema';
+import { authService } from '../../services/auth';
+import { htmlTable, printHtml } from '../../utils/print';
 
 export default function LabResults() {
   const [selectedPatient, setSelectedPatient] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [dateRange, setDateRange] = useState('7days');
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
+  const [showQuickResultModal, setShowQuickResultModal] = useState(false);
 
   const { data: labResults, loading } = useOfflineData('lab_results');
   const { data: labOrders } = useOfflineData('lab_orders');
   const { data: labTests } = useOfflineData('lab_test_catalog');
   const { data: patients } = useOfflineData('patients');
 
-  const handleCreateLabOrder = async (orderData) => {
-    await offlineService.create('lab_orders', orderData, 9);
-    setShowNewOrderModal(false);
-  };
-
-  const handleRecordResult = async (orderId, resultData) => {
-    await offlineService.update('lab_results', orderId, resultData);
-  };
-
   const results = (labResults || [])
     .filter(r => {
-      if (selectedPatient !== 'all' && r.patient_id !== selectedPatient) return false;
-      if (filterStatus !== 'all' && r.result_status !== filterStatus) return false;
+      if (selectedPatient !== 'all' && String(r.patient_id) !== String(selectedPatient)) return false;
+      if (filterStatus !== 'all' && normalizeStatus(r.result_status || r.status) !== filterStatus) return false;
+      if (!inDateRange(r.result_date || r.created_at, dateRange)) return false;
       return true;
     })
     .map(result => {
-      const patient = patients?.find(p => p.id === result.patient_id);
-      const order = labOrders?.find(o => o.id === result.lab_order_id);
+      const patient = patients?.find(p => String(p.id) === String(result.patient_id));
+      const order = labOrders?.find(o => String(o.id) === String(result.lab_order_id || result.order_id));
+      const test = labTests?.find(t => String(t.id) === String(result.test_id));
       return {
         ...result,
         patientName: patient?.full_name || 'Unknown',
         patientNumber: patient?.mrn || 'N/A',
-        status: result.result_status || 'pending',
-        orderDate: order?.created_at || result.created_at
+        testName: result.test_name || test?.name || result.test_code || 'Lab result',
+        status: normalizeStatus(result.result_status || result.status || 'pending'),
+        orderDate: order?.created_at || result.result_date || result.created_at
       };
     });
+
+  const handlePrintResults = () => {
+    printHtml({
+      title: 'Laboratory Results',
+      subtitle: selectedPatient === 'all'
+        ? `All patients | ${dateRangeLabel(dateRange)}`
+        : `${results[0]?.patientName || 'Selected patient'} | ${dateRangeLabel(dateRange)}`,
+      body: buildLabResultsPrintBody(results),
+      footer: 'Printed from DMS laboratory records.',
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -56,12 +64,27 @@ export default function LabResults() {
                 View and manage laboratory test results
               </p>
             </div>
-            <button
-              onClick={() => setShowNewOrderModal(true)}
-              className="px-6 py-3 bg-sky-600 text-white font-medium rounded-lg hover:bg-sky-700 transition-colors shadow-sm"
-            >
-              + New Lab Order
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handlePrintResults}
+                disabled={results.length === 0}
+                className="px-5 py-3 border border-gray-300 bg-white text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Print Results
+              </button>
+              <button
+                onClick={() => setShowQuickResultModal(true)}
+                className="px-5 py-3 border border-sky-200 bg-sky-50 text-sky-700 font-medium rounded-lg hover:bg-sky-100 transition-colors"
+              >
+                Record Result
+              </button>
+              <button
+                onClick={() => setShowNewOrderModal(true)}
+                className="px-6 py-3 bg-sky-600 text-white font-medium rounded-lg hover:bg-sky-700 transition-colors shadow-sm"
+              >
+                New Lab Order
+              </button>
+            </div>
           </div>
 
           {/* Filters */}
@@ -126,6 +149,11 @@ export default function LabResults() {
                 </div>
                 <div className="mt-4 text-sm text-gray-600">
                   <p>Order Date: {result.orderDate ? new Date(result.orderDate).toLocaleDateString() : 'N/A'}</p>
+                  <p className="mt-1">
+                    {result.testName}: <span className="font-semibold text-gray-900">{formatResultValue(result)}</span>
+                    <span className="ml-2 text-xs text-sky-700">{phaseLabel(result.result_phase)}</span>
+                  </p>
+                  {result.notes && <p className="mt-1 text-gray-500">{result.notes}</p>}
                 </div>
               </div>
             ))}
@@ -140,31 +168,6 @@ export default function LabResults() {
         )}
       </div>
 
-      {/* New Lab Order Modal */}
-      {showNewOrderModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">New Lab Order (Coming Soon)</h3>
-            <p className="text-gray-600 mb-4">
-              The lab order form with test selection will be available in the next update.
-            </p>
-            <p className="text-sm text-gray-500 mb-4">
-              Features coming soon:
-              • Select patient
-              • Choose tests (CBC, U&E, Creatinine, etc.)
-              • Set priority
-              • Add clinical notes
-            </p>
-            <button
-              onClick={() => setShowNewOrderModal(false)}
-              className="w-full px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
       <FormModal
         isOpen={showNewOrderModal}
         onClose={() => setShowNewOrderModal(false)}
@@ -178,6 +181,239 @@ export default function LabResults() {
           onCancel={() => setShowNewOrderModal(false)}
         />
       </FormModal>
+
+      <FormModal
+        isOpen={showQuickResultModal}
+        onClose={() => setShowQuickResultModal(false)}
+        title="Record Lab Result"
+        size="lg"
+      >
+        <QuickResultForm
+          patients={patients || []}
+          labTests={labTests || []}
+          onSuccess={() => setShowQuickResultModal(false)}
+          onCancel={() => setShowQuickResultModal(false)}
+        />
+      </FormModal>
     </div>
   );
+}
+
+function QuickResultForm({ patients, labTests, onSuccess, onCancel }) {
+  const [formData, setFormData] = useState({
+    patient_id: '',
+    test_id: '',
+    result_phase: 'pre_dialysis',
+    value_numeric: '',
+    value_text: '',
+    unit: '',
+    result_status: 'final',
+    notes: '',
+  });
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const selectedTest = labTests.find(test => String(test.id) === String(formData.test_id));
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'test_id' ? { unit: labTests.find(test => String(test.id) === String(value))?.unit || labTests.find(test => String(test.id) === String(value))?.default_unit || prev.unit } : {}),
+    }));
+    setError('');
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!formData.patient_id || !formData.test_id || (!formData.value_numeric && !formData.value_text)) {
+      setError('Patient, test, and a numeric or text result are required.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const currentUser = authService.getCurrentUser();
+      const numeric = formData.value_numeric === '' ? null : Number(formData.value_numeric);
+      const result = {
+        id: `local_lab_${Date.now()}`,
+        patient_id: formData.patient_id,
+        hospital_id: currentUser?.hospital_id || 'demo_hospital',
+        test_id: formData.test_id,
+        test_name: selectedTest?.name || 'Lab result',
+        test_code: selectedTest?.code || '',
+        result_phase: formData.result_phase,
+        value_numeric: numeric,
+        result_value: numeric,
+        value_text: formData.value_text,
+        unit: formData.unit || selectedTest?.unit || selectedTest?.default_unit || '',
+        result_status: formData.result_status,
+        status: formData.result_status,
+        is_abnormal: isAbnormal(numeric, selectedTest),
+        is_critical: isCritical(numeric, selectedTest),
+        result_date: new Date().toISOString(),
+        entered_by: currentUser?.id,
+        notes: formData.notes,
+        synced: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      await db.lab_results.put(result);
+      window.dispatchEvent(new CustomEvent('dms-local-change', {
+        detail: { entityType: 'lab_results', record: result },
+      }));
+      onSuccess?.();
+    } catch (err) {
+      setError(err.message || 'Failed to record result.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SelectField label="Patient" name="patient_id" value={formData.patient_id} onChange={handleChange} required
+          options={patients.filter(p => p.is_active).map(patient => ({ value: patient.id, label: `${patient.full_name} (${patient.mrn})` }))} />
+        <SelectField label="Test" name="test_id" value={formData.test_id} onChange={handleChange} required
+          options={labTests.map(test => ({ value: test.id, label: `${test.name} (${test.code})` }))} />
+        <SelectField label="Clinical State" name="result_phase" value={formData.result_phase} onChange={handleChange}
+          options={[
+            { value: 'pre_dialysis', label: 'Pre-dialysis' },
+            { value: 'routine', label: 'Routine/off-day' },
+            { value: 'intra_dialysis', label: 'Intra-dialysis' },
+            { value: 'intra_complication', label: 'Intra-dialysis complication' },
+            { value: 'post_dialysis', label: 'Post-dialysis' },
+            { value: 'off_session', label: 'Off-session urgent' },
+          ]} />
+        <SelectField label="Status" name="result_status" value={formData.result_status} onChange={handleChange}
+          options={[
+            { value: 'preliminary', label: 'Preliminary' },
+            { value: 'final', label: 'Final' },
+            { value: 'corrected', label: 'Corrected' },
+          ]} />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <InputField label="Numeric Value" name="value_numeric" type="number" step="0.01" value={formData.value_numeric} onChange={handleChange} />
+        <InputField label="Text Value" name="value_text" value={formData.value_text} onChange={handleChange} />
+        <InputField label="Unit" name="unit" value={formData.unit} onChange={handleChange} />
+      </div>
+      <label className="block">
+        <span className="block text-sm font-medium text-gray-700 mb-1">Notes</span>
+        <textarea name="notes" value={formData.notes} onChange={handleChange} rows={3}
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-sky-500" />
+      </label>
+      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <button type="button" onClick={onCancel} disabled={saving} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">Cancel</button>
+        <button type="submit" disabled={saving} className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 disabled:opacity-50">
+          {saving ? 'Saving...' : 'Save Result'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function SelectField({ label, name, value, onChange, options, required = false }) {
+  return (
+    <label className="block">
+      <span className="block text-sm font-medium text-gray-700 mb-1">{label}{required && <span className="text-red-500 ml-1">*</span>}</span>
+      <select name={name} value={value} onChange={onChange} required={required}
+        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-sky-500">
+        <option value="">Select {label}</option>
+        {options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    </label>
+  );
+}
+
+function InputField({ label, name, value, onChange, type = 'text', step }) {
+  return (
+    <label className="block">
+      <span className="block text-sm font-medium text-gray-700 mb-1">{label}</span>
+      <input name={name} type={type} step={step} value={value} onChange={onChange}
+        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-sky-500" />
+    </label>
+  );
+}
+
+function normalizeStatus(value) {
+  return String(value || 'pending').replace('-', '_');
+}
+
+function phaseLabel(value) {
+  const labels = {
+    pre_dialysis: 'Pre-dialysis',
+    routine: 'Routine',
+    intra_dialysis: 'Intra-dialysis',
+    intra_complication: 'Intra-complication',
+    post_dialysis: 'Post-dialysis',
+    off_session: 'Off-session',
+  };
+  return labels[value] || 'Routine';
+}
+
+function formatResultValue(result) {
+  if (result.value_text) return result.value_text;
+  const value = result.value_numeric ?? result.result_value ?? result.value;
+  if (value === null || value === undefined || value === '') return 'Not recorded';
+  return `${value} ${result.unit || ''}`.trim();
+}
+
+function buildLabResultsPrintBody(results) {
+  if (results.length === 0) {
+    return '<p>No lab results found for the selected filters.</p>';
+  }
+
+  return htmlTable(
+    ['Date', 'Patient', 'MRN', 'Test', 'Value', 'Clinical State', 'Status', 'Notes'],
+    results.map(result => [
+      result.orderDate ? new Date(result.orderDate).toLocaleDateString() : 'N/A',
+      result.patientName,
+      result.patientNumber,
+      result.testName,
+      formatResultValue(result),
+      phaseLabel(result.result_phase),
+      result.status,
+      result.notes || '',
+    ])
+  );
+}
+
+function dateRangeLabel(range) {
+  const labels = {
+    '7days': 'Last 7 days',
+    '30days': 'Last 30 days',
+    '90days': 'Last 90 days',
+    all: 'All time',
+  };
+  return labels[range] || 'Selected dates';
+}
+
+function inDateRange(value, range) {
+  if (range === 'all' || !value) return true;
+  const time = new Date(value).getTime();
+  if (Number.isNaN(time)) return true;
+  const days = range === '7days' ? 7 : range === '30days' ? 30 : 90;
+  return time >= Date.now() - days * 86400000;
+}
+
+function isAbnormal(value, test) {
+  if (value === null || value === undefined || !test) return false;
+  const low = Number(test.low ?? test.normal_low);
+  const high = Number(test.high ?? test.normal_high);
+  if (!Number.isNaN(low) && value < low) return true;
+  if (!Number.isNaN(high) && value > high) return true;
+  return false;
+}
+
+function isCritical(value, test) {
+  if (value === null || value === undefined || !test) return false;
+  const code = String(test.code || '').toUpperCase();
+  if (code === 'K' && value >= 6) return true;
+  if ((code === 'HB' || code === 'HGB') && value < 7) return true;
+  if (code === 'GLU' && (value < 3 || value > 20)) return true;
+  return false;
 }

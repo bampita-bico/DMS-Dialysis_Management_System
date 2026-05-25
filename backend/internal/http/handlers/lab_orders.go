@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/dmsafrica/dms/internal/db/sqlc"
@@ -23,12 +24,12 @@ func NewLabOrdersHandler(pool *pgxpool.Pool) *LabOrdersHandler {
 
 func (h *LabOrdersHandler) CreateOrder(c *gin.Context) {
 	var req struct {
-		PatientID      uuid.UUID   `json:"patient_id" binding:"required"`
-		SessionID      *uuid.UUID  `json:"session_id"`
-		Priority       string      `json:"priority" binding:"required"`
-		ClinicalNotes  *string     `json:"clinical_notes"`
-		DiagnosisCode  *string     `json:"diagnosis_code"`
-		Tests          []uuid.UUID `json:"tests" binding:"required"`
+		PatientID     uuid.UUID   `json:"patient_id" binding:"required"`
+		SessionID     *uuid.UUID  `json:"session_id"`
+		Priority      string      `json:"priority" binding:"required"`
+		ClinicalNotes *string     `json:"clinical_notes"`
+		DiagnosisCode *string     `json:"diagnosis_code"`
+		Tests         []uuid.UUID `json:"tests" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -61,6 +62,14 @@ func (h *LabOrdersHandler) CreateOrder(c *gin.Context) {
 	if req.SessionID != nil {
 		sessionID = pgtype.UUID{Bytes: *req.SessionID, Valid: true}
 	}
+	var clinicalNotes pgtype.Text
+	if req.ClinicalNotes != nil && *req.ClinicalNotes != "" {
+		clinicalNotes = pgtype.Text{String: *req.ClinicalNotes, Valid: true}
+	}
+	var diagnosisCode pgtype.Text
+	if req.DiagnosisCode != nil && *req.DiagnosisCode != "" {
+		diagnosisCode = pgtype.Text{String: *req.DiagnosisCode, Valid: true}
+	}
 
 	order, err := queries.CreateLabOrder(ctx, sqlc.CreateLabOrderParams{
 		HospitalID:    hospitalID,
@@ -70,8 +79,8 @@ func (h *LabOrdersHandler) CreateOrder(c *gin.Context) {
 		OrderDate:     pgtype.Date{Time: now, Valid: true},
 		OrderTime:     pgtype.Time{Microseconds: int64(now.Hour()*3600+now.Minute()*60+now.Second()) * 1000000, Valid: true},
 		Priority:      sqlc.LabPriority(req.Priority),
-		ClinicalNotes: pgtype.Text{String: *req.ClinicalNotes, Valid: req.ClinicalNotes != nil},
-		DiagnosisCode: pgtype.Text{String: *req.DiagnosisCode, Valid: req.DiagnosisCode != nil},
+		ClinicalNotes: clinicalNotes,
+		DiagnosisCode: diagnosisCode,
 	})
 
 	if err != nil {
@@ -134,6 +143,51 @@ func (h *LabOrdersHandler) GetOrder(c *gin.Context) {
 
 	tx.Commit(ctx)
 	c.JSON(http.StatusOK, order)
+}
+
+func (h *LabOrdersHandler) ListOrders(c *gin.Context) {
+	hospitalIDStr := c.GetString(middleware.CtxHospitalID)
+	limit := 100
+	if value := c.Query("limit"); value != "" {
+		if parsed, err := strconv.Atoi(value); err == nil && parsed > 0 && parsed <= 500 {
+			limit = parsed
+		}
+	}
+
+	ctx := c.Request.Context()
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start transaction"})
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	if err := tenant.SetLocalHospitalID(ctx, tx, hospitalIDStr); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set tenant context"})
+		return
+	}
+
+	var raw []byte
+	if err := tx.QueryRow(ctx, `
+		SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)
+		FROM (
+			SELECT *
+			FROM lab_orders
+			WHERE hospital_id = $1::uuid
+			  AND deleted_at IS NULL
+			ORDER BY order_date DESC, order_time DESC
+			LIMIT $2
+		) t
+	`, hospitalIDStr, limit).Scan(&raw); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list orders"})
+		return
+	}
+	if err := tx.Commit(ctx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	c.Data(http.StatusOK, "application/json", raw)
 }
 
 func (h *LabOrdersHandler) ListPendingOrders(c *gin.Context) {

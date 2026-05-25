@@ -12,6 +12,13 @@ import { v4 as uuidv4 } from 'uuid';
  */
 
 class OfflineService {
+  emitChange(entityType, record = null) {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('dms-local-change', {
+      detail: { entityType, record },
+    }));
+  }
+
   /**
    * Create entity (offline-first)
    * @param {string} entityType - Table name
@@ -38,6 +45,7 @@ class OfflineService {
     await enqueueSync(entityType, localId, 'CREATE', entity, priority);
 
     console.log(`💾 Created ${entityType} locally: ${localId}`);
+    this.emitChange(entityType, entity);
 
     return entity;
   }
@@ -71,6 +79,7 @@ class OfflineService {
     await enqueueSync(entityType, id, 'UPDATE', updated, priority);
 
     console.log(`💾 Updated ${entityType} locally: ${id}`);
+    this.emitChange(entityType, updated);
 
     return updated;
   }
@@ -97,6 +106,7 @@ class OfflineService {
     await enqueueSync(entityType, id, 'DELETE', { id }, priority);
 
     console.log(`💾 Deleted ${entityType} locally: ${id}`);
+    this.emitChange(entityType, { id, deleted_at: new Date().toISOString() });
   }
 
   /**
@@ -159,6 +169,12 @@ class OfflineService {
       if (filters.status) {
         query = query.and(item => item.status === filters.status);
       }
+      if (filters.acknowledged !== undefined) {
+        query = query.and(item => item.acknowledged === filters.acknowledged);
+      }
+      if (filters.invoice_status) {
+        query = query.and(item => item.invoice_status === filters.invoice_status);
+      }
       if (filters.date) {
         query = query.and(item => item.scheduled_date === filters.date || item.created_at?.startsWith(filters.date));
       }
@@ -175,6 +191,11 @@ class OfflineService {
     if (navigator.onLine) {
       try {
         const endpoint = this.getEndpoint(entityType);
+        if (!endpoint) {
+          return await db.table(entityType)
+            .filter(item => !item.deleted_at)
+            .toArray();
+        }
         const response = await api.get(endpoint, { params: filters });
         const entities = response.data.data || response.data;
 
@@ -245,10 +266,32 @@ class OfflineService {
       session_vitals: '/vitals',
       session_complications: '/session-complications',
       session_fluid_balance: '/session-fluid-balance',
+      dialysate_records: '/clinical-tracking/dialysate-records',
       vascular_access: '/vascular-access',
+      vascular_access_assessments: '/clinical-tracking/vascular-access-assessments',
+      patient_clinical_profiles: '/clinical-tracking/patient-clinical-profiles',
+      session_safety_checks: '/clinical-tracking/session-safety-checks',
+      clinical_alerts: '/clinical-tracking/clinical-alerts',
+      mortality_records: '/mortality-records',
+      treatment_telemetry: '/clinical-tracking/treatment-telemetry',
+      access_lifecycle_events: '/clinical-tracking/access-lifecycle-events',
+      infection_surveillance_events: '/clinical-tracking/infection-surveillance-events',
+      adequacy_reviews: '/clinical-tracking/adequacy-reviews',
+      medication_reconciliation_reviews: '/clinical-tracking/medication-reconciliation-reviews',
+      patient_reported_events: '/clinical-tracking/patient-reported-events',
+      staff_attendance_verifications: '/clinical-tracking/staff-attendance-verifications',
+      unit_safety_events: '/clinical-tracking/unit-safety-events',
+      interoperability_exports: '/clinical-tracking/interoperability-exports',
+      ontology_relationships: '/clinical-tracking/ontology-relationships',
+      diagnoses: null,
+      comorbidities: null,
+      consents: null,
       lab_orders: '/lab/orders',
       lab_results: '/lab-results',
       lab_critical_alerts: '/lab-critical-alerts',
+      lab_test_catalog: '/lab/tests',
+      lab_panels: '/lab/panels',
+      medications: '/medications',
       prescriptions: '/prescriptions',
       prescription_items: '/prescriptions',
       invoices: '/invoices',

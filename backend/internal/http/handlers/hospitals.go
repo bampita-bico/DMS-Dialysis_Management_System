@@ -66,6 +66,11 @@ func (h *HospitalsHandler) Create(c *gin.Context) {
 		return
 	}
 
+	if err := ensureDefaultRoles(c.Request.Context(), h.pool, hospital.ID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to initialize hospital roles"})
+		return
+	}
+
 	c.JSON(http.StatusCreated, hospital)
 }
 

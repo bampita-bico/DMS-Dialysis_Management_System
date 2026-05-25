@@ -1,25 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useOfflineData from '../../hooks/useOfflineData';
-import offlineService from '../../services/offlineService';
 import FormModal from '../../components/forms/FormModal';
 import PatientForm from '../../components/forms/PatientForm';
 
 export default function PatientsList() {
-  const { data: patients, loading, error } = useOfflineData('patients');
+  const { data: patients, loading } = useOfflineData('patients');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
-
-  const handleCreatePatient = async (patientData) => {
-    await offlineService.create('patients', patientData, 10);
-    setShowNewPatientModal(false);
-  };
-
-  const handleUpdatePatient = async (id, updates) => {
-    await offlineService.update('patients', id, updates);
-  };
 
   const filteredPatients = (patients || [])
     .filter(p => {

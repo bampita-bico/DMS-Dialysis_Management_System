@@ -1,6 +1,6 @@
 export default function FormField({
   label, name, type = 'text', value, onChange, error, required = false,
-  options = [], placeholder = '', disabled = false, rows = 3
+  options = [], placeholder = '', disabled = false, rows = 3, step, min, max
 }) {
   const baseInputClasses = "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed";
   const errorClasses = error ? "border-red-500" : "border-gray-300";
@@ -43,6 +43,9 @@ export default function FormField({
           onChange={onChange}
           placeholder={placeholder}
           disabled={disabled}
+          step={step}
+          min={min}
+          max={max}
           className={`${baseInputClasses} ${errorClasses}`}
         />
       )}

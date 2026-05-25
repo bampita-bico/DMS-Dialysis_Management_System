@@ -12,10 +12,9 @@ const HospitalTab = () => {
   const loadHospitalInfo = () => {
     try {
       const user = authService.getCurrentUser();
-      // In a real implementation, fetch full hospital details
       setHospitalInfo({
         name: user?.hospital_name || 'Demo Dialysis Center',
-        location: 'Nairobi, Kenya',
+        location: 'Uganda',
         phone: '+254 700 000 000',
         email: 'info@hospital.com',
         admin: user?.full_name || 'Dr. Admin',

@@ -4,7 +4,7 @@ import Dexie from 'dexie';
 export const db = new Dexie('dms_local');
 
 // Define database schema
-db.version(2).stores({
+db.version(5).stores({
   // Core entities
   patients: 'id, mrn, hospital_id, full_name, *search_terms, updated_at, synced',
   patient_contacts: 'id, patient_id, contact_type, hospital_id, updated_at, synced',
@@ -15,9 +15,32 @@ db.version(2).stores({
   session_vitals: 'id, session_id, recorded_at, updated_at, synced',
   session_complications: 'id, session_id, complication_type, severity, updated_at, synced',
   session_fluid_balance: 'id, session_id, updated_at, synced',
+  dialysate_records: 'id, session_id, patient_id, recorded_at, updated_at, synced',
 
   // Vascular access
   vascular_access: 'id, patient_id, access_type, access_status, updated_at, synced',
+  vascular_access_assessments: 'id, patient_id, access_id, session_id, assessed_at, updated_at, synced',
+
+  // Consultant clinical tracking extensions
+  patient_clinical_profiles: 'id, patient_id, renal_course, kidney_disease_cause, updated_at, synced',
+  session_safety_checks: 'id, patient_id, session_id, check_status, override_required, checked_at, updated_at, synced',
+  clinical_alerts: 'id, patient_id, session_id, alert_type, severity, status, created_at, synced',
+  mortality_records: 'id, patient_id, date_of_death, death_setting, hospital_id, updated_at, synced',
+  treatment_telemetry: 'id, patient_id, session_id, recorded_at, updated_at, synced',
+  access_lifecycle_events: 'id, patient_id, access_id, event_type, event_date, updated_at, synced',
+  infection_surveillance_events: 'id, patient_id, access_id, event_type, event_date, reported_to_registry, updated_at, synced',
+  adequacy_reviews: 'id, patient_id, session_id, review_month, adequacy_status, doctor_review_required, updated_at, synced',
+  medication_reconciliation_reviews: 'id, patient_id, review_date, review_type, status, updated_at, synced',
+  patient_reported_events: 'id, patient_id, session_id, event_type, reported_at, updated_at, synced',
+  staff_attendance_verifications: 'id, staff_id, user_id, verification_date, verification_result, updated_at, synced',
+  unit_safety_events: 'id, event_type, severity, event_date, closed_at, updated_at, synced',
+  interoperability_exports: 'id, patient_id, export_type, fhir_resource_type, export_status, updated_at, synced',
+  ontology_relationships: 'id, patient_id, source_type, relation_type, target_type, is_active, updated_at, synced',
+
+  // Medical history
+  diagnoses: 'id, patient_id, diagnosis_type, icd10_code, diagnosed_at, updated_at, synced',
+  comorbidities: 'id, patient_id, condition, status, diagnosed_at, updated_at, synced',
+  consents: 'id, patient_id, consent_type, status, signed_at, updated_at, synced',
 
   // Lab management
   lab_orders: 'id, patient_id, order_status, ordered_at, hospital_id, updated_at, synced',
@@ -57,6 +80,13 @@ export const initializeMetadata = async () => {
   const entityTypes = [
     'patients', 'dialysis_sessions', 'lab_orders', 'lab_results',
     'prescriptions', 'invoices', 'payments', 'vascular_access',
+    'vascular_access_assessments', 'session_vitals', 'dialysate_records',
+    'diagnoses', 'comorbidities', 'consents', 'patient_clinical_profiles',
+    'session_safety_checks', 'clinical_alerts', 'mortality_records', 'treatment_telemetry',
+    'access_lifecycle_events', 'infection_surveillance_events', 'adequacy_reviews',
+    'medication_reconciliation_reviews', 'patient_reported_events',
+    'staff_attendance_verifications', 'unit_safety_events', 'interoperability_exports',
+    'ontology_relationships',
   ];
 
   for (const entityType of entityTypes) {

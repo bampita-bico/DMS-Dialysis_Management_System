@@ -6,11 +6,15 @@ export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const user = authService.getCurrentUser();
+  const hospitalName = user?.hospital_name || 'Demo Dialysis Center';
+  const isPlatformAdmin = authService.isPlatformAdmin();
 
   const navigation = [
     { name: 'Dashboard', path: '/dashboard', icon: '📊', dark: false },
     { name: 'Patients', path: '/patients', icon: '👥', dark: false },
     { name: 'Sessions', path: '/sessions', icon: '🩺', dark: false },
+    { name: 'Clinical', path: '/clinical', icon: '⚕️', dark: false },
+    { name: 'Reports', path: '/reports/mortality', icon: '📄', dark: false },
     { name: 'Laboratory', path: '/lab', icon: '🧪', dark: false },
     { name: 'Billing', path: '/billing', icon: '💰', dark: true },
     { name: 'Staff', path: '/staff', icon: '👨‍⚕️', dark: true },
@@ -31,7 +35,7 @@ export default function Layout({ children }) {
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
                 <span className="text-2xl font-bold text-sky-600">DMS</span>
-                <span className="ml-2 text-sm text-gray-600">Kiruddu Hospital</span>
+                <span className="ml-2 text-sm text-gray-600">{hospitalName}</span>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-1">
                 {navigation.map((item) => {
@@ -68,6 +72,15 @@ export default function Layout({ children }) {
               >
                 ⚙️
               </Link>
+              {isPlatformAdmin && (
+                <Link
+                  to="/platform"
+                  className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition"
+                  title="Platform Admin"
+                >
+                  Platform
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition"

@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth';
 
 export default function Login() {
-  const [email, setEmail] = useState('msbico@gmail.com');
-  const [password, setPassword] = useState('DrBico123!');
+  const [email, setEmail] = useState('bampita-bico');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -110,18 +110,18 @@ export default function Login() {
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email address
+                Username or email
               </label>
               <input
                 id="email"
                 name="email"
-                type="email"
-                autoComplete="email"
+                type="text"
+                autoComplete="username"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150"
-                placeholder="doctor@hospital.com"
+                placeholder="bampita-bico or doctor@hospital.com"
               />
             </div>
 

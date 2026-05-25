@@ -1,6 +1,6 @@
 import db from './schema';
 import api from '../services/api';
-import { enqueueSync, getPendingSyncItems, markSyncCompleted, markSyncFailed } from '../utils/queueManager';
+import { getPendingSyncItems, markSyncCompleted, markSyncFailed } from '../utils/queueManager';
 
 /**
  * Sync Manager - Orchestrates data synchronization between IndexedDB and server
@@ -169,10 +169,35 @@ class SyncManager {
       session_vitals: '/vitals',
       session_complications: '/session-complications',
       session_fluid_balance: '/session-fluid-balance',
+      dialysate_records: '/clinical-tracking/dialysate-records',
       vascular_access: '/vascular-access',
+      vascular_access_assessments: '/clinical-tracking/vascular-access-assessments',
+      patient_clinical_profiles: '/clinical-tracking/patient-clinical-profiles',
+      session_safety_checks: '/clinical-tracking/session-safety-checks',
+      clinical_alerts: '/clinical-tracking/clinical-alerts',
+      mortality_records: '/mortality-records',
+      treatment_telemetry: '/clinical-tracking/treatment-telemetry',
+      access_lifecycle_events: '/clinical-tracking/access-lifecycle-events',
+      infection_surveillance_events: '/clinical-tracking/infection-surveillance-events',
+      adequacy_reviews: '/clinical-tracking/adequacy-reviews',
+      medication_reconciliation_reviews: '/clinical-tracking/medication-reconciliation-reviews',
+      patient_reported_events: '/clinical-tracking/patient-reported-events',
+      staff_attendance_verifications: '/clinical-tracking/staff-attendance-verifications',
+      unit_safety_events: '/clinical-tracking/unit-safety-events',
+      interoperability_exports: '/clinical-tracking/interoperability-exports',
+      ontology_relationships: '/clinical-tracking/ontology-relationships',
+      diagnoses: null,
+      comorbidities: null,
+      consents: null,
       lab_orders: '/lab/orders',
       lab_results: '/lab-results',
       lab_critical_alerts: '/lab-critical-alerts',
+      lab_test_catalog: '/lab/tests',
+      lab_panels: '/lab/panels',
+      medications: '/medications',
+      consumables: '/consumables',
+      insurance_schemes: null,
+      price_lists: null,
       prescriptions: '/prescriptions',
       prescription_items: '/prescriptions', // Nested under prescriptions
       invoices: '/invoices',
@@ -248,6 +273,18 @@ class SyncManager {
 
       await this.pullFromServer('patients', thirtyDaysAgo);
       await this.pullFromServer('dialysis_sessions', thirtyDaysAgo);
+      await this.pullFromServer('patient_clinical_profiles', thirtyDaysAgo);
+      await this.pullFromServer('session_safety_checks', thirtyDaysAgo);
+      await this.pullFromServer('clinical_alerts', thirtyDaysAgo);
+      await this.pullFromServer('treatment_telemetry', thirtyDaysAgo);
+      await this.pullFromServer('access_lifecycle_events', thirtyDaysAgo);
+      await this.pullFromServer('infection_surveillance_events', thirtyDaysAgo);
+      await this.pullFromServer('adequacy_reviews', thirtyDaysAgo);
+      await this.pullFromServer('medication_reconciliation_reviews', thirtyDaysAgo);
+      await this.pullFromServer('patient_reported_events', thirtyDaysAgo);
+      await this.pullFromServer('unit_safety_events', thirtyDaysAgo);
+      await this.pullFromServer('interoperability_exports', thirtyDaysAgo);
+      await this.pullFromServer('ontology_relationships', thirtyDaysAgo);
       await this.pullFromServer('lab_orders', thirtyDaysAgo);
       await this.pullFromServer('prescriptions', thirtyDaysAgo);
       await this.pullFromServer('invoices', thirtyDaysAgo);

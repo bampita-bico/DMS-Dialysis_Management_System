@@ -139,7 +139,7 @@ func (h *DialysisSessionsHandler) Create(c *gin.Context) {
 		return
 	}
 
-	scheduledStartTime, err := time.Parse("15:04:05", req.ScheduledStartTime)
+	scheduledStartTime, err := parseClockTime(req.ScheduledStartTime)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid scheduled_start_time format (use HH:MM:SS)"})
 		return
@@ -236,6 +236,65 @@ func (h *DialysisSessionsHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, session)
+}
+
+// List returns recent dialysis sessions for the current hospital.
+// GET /api/v1/dialysis-sessions?date=YYYY-MM-DD&limit=100
+func (h *DialysisSessionsHandler) List(c *gin.Context) {
+	hospitalIDStr := c.GetString(middleware.CtxHospitalID)
+	limit := 100
+	if limitStr := c.Query("limit"); limitStr != "" {
+		if parsed, err := strconv.Atoi(limitStr); err == nil && parsed > 0 && parsed <= 500 {
+			limit = parsed
+		}
+	}
+
+	ctx := c.Request.Context()
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to begin transaction"})
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	if err := tenant.SetLocalHospitalID(ctx, tx, hospitalIDStr); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to set tenant context"})
+		return
+	}
+
+	args := []any{hospitalIDStr, limit}
+	where := "hospital_id = $1::uuid AND deleted_at IS NULL"
+	if date := c.Query("date"); date != "" {
+		if _, err := time.Parse("2006-01-02", date); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid date format"})
+			return
+		}
+		args = append(args, date)
+		where += " AND scheduled_date = $3::date"
+	}
+
+	query := `
+		SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)
+		FROM (
+			SELECT *
+			FROM dialysis_sessions
+			WHERE ` + where + `
+			ORDER BY scheduled_date DESC, scheduled_start_time DESC
+			LIMIT $2
+		) t
+	`
+
+	var raw []byte
+	if err := tx.QueryRow(ctx, query, args...).Scan(&raw); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list dialysis sessions"})
+		return
+	}
+	if err := tx.Commit(ctx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to commit transaction"})
+		return
+	}
+
+	c.Data(http.StatusOK, "application/json", raw)
 }
 
 // Get retrieves a specific dialysis session by ID
@@ -462,11 +521,11 @@ func (h *DialysisSessionsHandler) Start(c *gin.Context) {
 	}
 
 	var req struct {
-		PreWeightKg     float64 `json:"pre_weight_kg" binding:"required"`
-		PreBpSystolic   int32   `json:"pre_bp_systolic" binding:"required"`
-		PreBpDiastolic  int32   `json:"pre_bp_diastolic" binding:"required"`
-		PreHr           int32   `json:"pre_hr" binding:"required"`
-		PreTemp         float64 `json:"pre_temp"`
+		PreWeightKg    float64 `json:"pre_weight_kg" binding:"required"`
+		PreBpSystolic  int32   `json:"pre_bp_systolic" binding:"required"`
+		PreBpDiastolic int32   `json:"pre_bp_diastolic" binding:"required"`
+		PreHr          int32   `json:"pre_hr" binding:"required"`
+		PreTemp        float64 `json:"pre_temp"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -727,4 +786,11 @@ func (h *DialysisSessionsHandler) UpdateStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, session)
+}
+
+func parseClockTime(value string) (time.Time, error) {
+	if len(value) == 5 {
+		value += ":00"
+	}
+	return time.Parse("15:04:05", value)
 }
